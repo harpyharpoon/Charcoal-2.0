@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charcoal 2.0 - Chat Demo</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #1a1a1a;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .chat-container {
+            display: flex;
+            gap: 20px;
+            height: 70vh;
+        }
+        
+        .characters-panel {
+            flex: 1;
+            background-color: #2a2a2a;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .chat-panel {
+            flex: 2;
+            background-color: #2a2a2a;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #333;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #1a1a1a;
+        }
+        
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .character-card {
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .character-card:hover {
+            background-color: #444;
+        }
+        
+        .character-card.selected {
+            background-color: #005500;
+            border-color: #00ff00;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            padding: 5px;
+            border-left: 3px solid #00ff00;
+            padding-left: 10px;
+        }
+        
+        .message-header {
+            color: #ffff00;
+            font-weight: bold;
+        }
+        
+        .message-content {
+            color: #ffffff;
+            margin-top: 5px;
+        }
+        
+        .message-time {
+            color: #888;
+            font-size: 0.8em;
+        }
+        
+        input, button, select {
+            background-color: #333;
+            color: #00ff00;
+            border: 1px solid #555;
+            padding: 8px;
+            border-radius: 3px;
+        }
+        
+        button {
+            cursor: pointer;
+            background-color: #005500;
+            border-color: #00ff00;
+        }
+        
+        button:hover {
+            background-color: #007700;
+        }
+        
+        .status {
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #2a2a2a;
+            border-radius: 5px;
+        }
+        
+        .connected {
+            color: #00ff00;
+        }
+        
+        .disconnected {
+            color: #ff0000;
+        }
+        
+        .character-creator {
+            background-color: #2a2a2a;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 10px;
+        }
+        
+        .form-group label {
+            display: inline-block;
+            width: 120px;
+            color: #ffff00;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 CHARCOAL 2.0 - CHAT DEMO 🔥</h1>
+            <div class="status">
+                WebSocket: <span id="connectionStatus" class="disconnected">Disconnected</span>
+            </div>
+        </div>
+
+        <!-- Character Creator -->
+        <div class="character-creator">
+            <h2>Create Character</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Name:</label>
+                    <input type="text" id="charName" placeholder="Enter character name">
+                </div>
+                <div class="form-group">
+                    <label>Class:</label>
+                    <select id="charClass">
+                        <option value="Warrior">Warrior</option>
+                        <option value="Mage">Mage</option>
+                        <option value="Rogue">Rogue</option>
+                        <option value="Cleric">Cleric</option>
+                        <option value="Paladin">Paladin</option>
+                        <option value="Archer">Archer</option>
+                        <option value="Bard">Bard</option>
+                        <option value="Druid">Druid</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Background:</label>
+                    <select id="charBackground">
+                        <option value="Noble">Noble</option>
+                        <option value="Criminal">Criminal</option>
+                        <option value="Folk Hero">Folk Hero</option>
+                        <option value="Sage">Sage</option>
+                        <option value="Soldier">Soldier</option>
+                        <option value="Hermit">Hermit</option>
+                        <option value="Entertainer">Entertainer</option>
+                        <option value="Outlander">Outlander</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Personality:</label>
+                    <select id="charPersonality">
+                        <option value="brave">Brave</option>
+                        <option value="cautious">Cautious</option>
+                        <option value="curious">Curious</option>
+                        <option value="hot-headed">Hot-headed</option>
+                        <option value="wise">Wise</option>
+                        <option value="mischievous">Mischievous</option>
+                        <option value="loyal">Loyal</option>
+                        <option value="independent">Independent</option>
+                        <option value="cheerful">Cheerful</option>
+                        <option value="serious">Serious</option>
+                        <option value="witty">Witty</option>
+                        <option value="stoic">Stoic</option>
+                    </select>
+                </div>
+                <button onclick="createCharacter()">Create Character</button>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <!-- Characters Panel -->
+            <div class="characters-panel">
+                <h3>🛡️ Available Characters</h3>
+                <div id="charactersList">
+                    <!-- Characters will be loaded here -->
+                </div>
+                <button onclick="loadCharacters()">Refresh Characters</button>
+            </div>
+
+            <!-- Chat Panel -->
+            <div class="chat-panel">
+                <h3>💬 Pub Chat</h3>
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Chat messages will appear here -->
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="messageInput" placeholder="Type your message..." style="flex: 1;">
+                    <button onclick="sendMessage()">Send</button>
+                    <button onclick="generateAIResponse()">AI Response</button>
+                </div>
+                <div style="margin-top: 10px; font-size: 0.9em; color: #888;">
+                    Selected Character: <span id="selectedCharacterName">None</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let websocket = null;
+        let selectedCharacter = null;
+        let characters = [];
+        const API_BASE = 'http://localhost:8000';
+
+        // WebSocket connection
+        function connectWebSocket() {
+            try {
+                websocket = new WebSocket('ws://localhost:8000/ws');
+                
+                websocket.onopen = function(event) {
+                    console.log('WebSocket connected');
+                    document.getElementById('connectionStatus').textContent = 'Connected';
+                    document.getElementById('connectionStatus').className = 'connected';
+                };
+                
+                websocket.onmessage = function(event) {
+                    const message = JSON.parse(event.data);
+                    console.log('Received message:', message);
+                    
+                    if (message.type === 'chat_message') {
+                        displayMessage(message.data);
+                    }
+                };
+                
+                websocket.onclose = function(event) {
+                    console.log('WebSocket disconnected');
+                    document.getElementById('connectionStatus').textContent = 'Disconnected';
+                    document.getElementById('connectionStatus').className = 'disconnected';
+                    
+                    // Attempt to reconnect after 3 seconds
+                    setTimeout(connectWebSocket, 3000);
+                };
+                
+                websocket.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                };
+            } catch (error) {
+                console.error('Failed to connect WebSocket:', error);
+                setTimeout(connectWebSocket, 3000);
+            }
+        }
+
+        // API functions
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                };
+                
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+                
+                const response = await fetch(API_BASE + endpoint, options);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                throw error;
+            }
+        }
+
+        // Character management
+        async function createCharacter() {
+            const name = document.getElementById('charName').value.trim();
+            const characterClass = document.getElementById('charClass').value;
+            const background = document.getElementById('charBackground').value;
+            const personality = document.getElementById('charPersonality').value;
+            
+            if (!name) {
+                alert('Please enter a character name');
+                return;
+            }
+            
+            try {
+                const character = await apiCall('/api/v1/characters', 'POST', {
+                    name: name,
+                    character_class: characterClass,
+                    background: background,
+                    personality: personality
+                });
+                
+                console.log('Character created:', character);
+                document.getElementById('charName').value = '';
+                await loadCharacters();
+                alert(`Character "${character.name}" created successfully!`);
+            } catch (error) {
+                alert('Failed to create character: ' + error.message);
+            }
+        }
+
+        async function loadCharacters() {
+            try {
+                const response = await apiCall('/api/v1/characters');
+                characters = response.characters;
+                displayCharacters();
+            } catch (error) {
+                console.error('Failed to load characters:', error);
+                document.getElementById('charactersList').innerHTML = '<p>Failed to load characters</p>';
+            }
+        }
+
+        function displayCharacters() {
+            const container = document.getElementById('charactersList');
+            container.innerHTML = '';
+            
+            characters.forEach(character => {
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                card.onclick = () => selectCharacter(character);
+                
+                card.innerHTML = `
+                    <div><strong>${character.name}</strong></div>
+                    <div>${character.character_class}</div>
+                    <div style="font-size: 0.8em; color: #888;">${character.background} • ${character.personality}</div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        function selectCharacter(character) {
+            selectedCharacter = character;
+            document.getElementById('selectedCharacterName').textContent = character.name;
+            
+            // Update visual selection
+            document.querySelectorAll('.character-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.character-card').classList.add('selected');
+        }
+
+        // Chat functions
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+            if (!selectedCharacter) {
+                alert('Please select a character first');
+                return;
+            }
+            
+            try {
+                await apiCall('/api/v1/chat/messages', 'POST', {
+                    character_id: selectedCharacter.name,
+                    message: message,
+                    chat_type: 'pub'
+                });
+                
+                messageInput.value = '';
+            } catch (error) {
+                alert('Failed to send message: ' + error.message);
+            }
+        }
+
+        async function generateAIResponse() {
+            if (!selectedCharacter) {
+                alert('Please select a character first');
+                return;
+            }
+            
+            try {
+                const response = await apiCall('/api/v1/chat/ai-response', 'POST', {
+                    character_id: selectedCharacter.name,
+                    context: "You are in a cozy pub called 'The Pub'. You're chatting with other patrons.",
+                    prompt: "Generate a casual greeting or comment",
+                    conversation_type: "pub_chat"
+                });
+                
+                // Send the AI response as a chat message
+                await apiCall('/api/v1/chat/messages', 'POST', {
+                    character_id: selectedCharacter.name,
+                    message: response.response,
+                    chat_type: 'pub'
+                });
+                
+            } catch (error) {
+                alert('Failed to generate AI response: ' + error.message);
+            }
+        }
+
+        function displayMessage(messageData) {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            
+            const timestamp = new Date(messageData.timestamp).toLocaleTimeString();
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    ${messageData.character_name}
+                    <span class="message-time">[${timestamp}]</span>
+                </div>
+                <div class="message-content">${messageData.message}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        async function loadChatHistory() {
+            try {
+                const response = await apiCall('/api/v1/chat/messages?limit=50');
+                response.messages.forEach(message => {
+                    displayMessage(message);
+                });
+            } catch (error) {
+                console.error('Failed to load chat history:', error);
+            }
+        }
+
+        // Event handlers
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Initialize the application
+        window.onload = function() {
+            connectWebSocket();
+            loadCharacters();
+            loadChatHistory();
+        };
+    </script>
+</body>
+</html>

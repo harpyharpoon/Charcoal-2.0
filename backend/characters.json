@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Theron",
+    "character_class": "Warrior",
+    "background": "Soldier",
+    "personality": "brave",
+    "hp": 100,
+    "level": 1,
+    "experience": 0,
+    "description": "A soldier warrior with a brave personality"
+  },
+  {
+    "name": "Lyra",
+    "character_class": "Mage",
+    "background": "Sage",
+    "personality": "wise",
+    "hp": 100,
+    "level": 1,
+    "experience": 0,
+    "description": "A sage mage with a wise personality"
+  },
+  {
+    "name": "Kael",
+    "character_class": "Rogue",
+    "background": "Criminal",
+    "personality": "mischievous",
+    "hp": 100,
+    "level": 1,
+    "experience": 0,
+    "description": "A criminal rogue with a mischievous personality"
+  },
+  {
+    "name": "Sera",
+    "character_class": "Cleric",
+    "background": "Folk Hero",
+    "personality": "loyal",
+    "hp": 100,
+    "level": 1,
+    "experience": 0,
+    "description": "A folk hero cleric with a loyal personality"
+  },
+  {
+    "name": "Gareth",
+    "character_class": "Paladin",
+    "background": "Noble",
+    "personality": "righteous",
+    "hp": 100,
+    "level": 1,
+    "experience": 0,
+    "description": "A noble paladin with a righteous personality"
+  },
+  {
+    "name": "Zara",
+    "character_class": "Archer",
+    "background": "Outlander",
+    "personality": "independent",
+    "hp": 100,
+    "level": 1,
+    "experience": 0,
+    "description": "A outlander archer with a independent personality"
+  },
+  {
+    "name": "Felix",
+    "character_class": "Bard",
+    "background": "Entertainer",
+    "personality": "cheerful",
+    "hp": 100,
+    "level": 1,
+    "experience": 0,
+    "description": "A entertainer bard with a cheerful personality"
+  },
+  {
+    "name": "Nyssa",
+    "character_class": "Druid",
+    "background": "Hermit",
+    "personality": "wise",
+    "hp": 100,
+    "level": 1,
+    "experience": 0,
+    "description": "A hermit druid with a wise personality"
+  },
+  {
+    "name": "API Test Hero",
+    "character_class": "Warrior",
+    "background": "Soldier",
+    "personality": "brave",
+    "hp": 100,
+    "level": 1,
+    "experience": 0,
+    "description": "A soldier warrior with a brave personality"
+  },
+  {
+    "name": "Demo Wizard",
+    "character_class": "Mage",
+    "background": "Sage",
+    "personality": "wise",
+    "hp": 100,
+    "level": 1,
+    "experience": 0,
+    "description": "A sage mage with a wise personality"
+  }
+]
