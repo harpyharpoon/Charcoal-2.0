@@ -2,6 +2,7 @@ import random
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 from enum import Enum
+from items import Item, item_generator
 
 
 class AreaType(Enum):
@@ -12,6 +13,8 @@ class AreaType(Enum):
     TREASURE_ROOM = "treasure_room"
     TRAP_ROOM = "trap_room"
     PUZZLE_ROOM = "puzzle_room"
+    SECRET_ROOM = "secret_room"
+    SANCTUM = "sanctum"
 
 
 @dataclass
@@ -21,7 +24,7 @@ class Area:
     description: str
     area_type: AreaType
     enemies: List[str]
-    treasures: List[str]
+    treasures: List[Item]  # Changed from List[str] to List[Item]
     exits: List[str]
     difficulty: int = 1
     discovered: bool = False
@@ -32,7 +35,8 @@ class Area:
         if self.enemies:
             desc += f"\n*Potential threats: {', '.join(self.enemies)}*"
         if self.treasures:
-            desc += f"\n*Treasures spotted: {', '.join(self.treasures)}*"
+            treasure_names = [item.get_display_name() for item in self.treasures]
+            desc += f"\n*Treasures spotted: {', '.join(treasure_names)}*"
         if self.exits:
             desc += f"\n*Exits lead to: {', '.join(self.exits)}*"
         return desc
@@ -57,8 +61,29 @@ class Dungeon:
             self._generate_forest_dungeon()
         elif self.theme == "underground":
             self._generate_underground_dungeon()
+        elif self.theme == "tower":
+            self._generate_tower_dungeon()
         else:
             self._generate_ancient_dungeon()
+    
+    def _generate_treasures_for_area_type(self, area_type: AreaType, num_items: int = None) -> List[Item]:
+        """Generate appropriate treasures for an area type"""
+        return item_generator.generate_treasure_for_area(area_type.value, difficulty=self._get_area_difficulty(area_type))
+    
+    def _get_area_difficulty(self, area_type: AreaType) -> int:
+        """Get difficulty level for area type"""
+        difficulty_map = {
+            AreaType.ENTRANCE: 1,
+            AreaType.CORRIDOR: 1,
+            AreaType.CHAMBER: 2,
+            AreaType.TRAP_ROOM: 3,
+            AreaType.PUZZLE_ROOM: 3,
+            AreaType.SECRET_ROOM: 4,
+            AreaType.TREASURE_ROOM: 4,
+            AreaType.SANCTUM: 5,
+            AreaType.BOSS_ROOM: 5
+        }
+        return difficulty_map.get(area_type, 2)
     
     def _generate_ancient_dungeon(self):
         """Generate an ancient temple/ruins dungeon"""
@@ -68,7 +93,7 @@ class Dungeon:
                 description="Crumbling stone pillars frame the entrance to an ancient temple. Moss covers the weathered reliefs.",
                 area_type=AreaType.ENTRANCE,
                 enemies=["Stone Guardian"],
-                treasures=["Ancient Coin"],
+                treasures=self._generate_treasures_for_area_type(AreaType.ENTRANCE),
                 exits=["main_hall", "side_chamber"]
             ),
             "main_hall": Area(
@@ -76,7 +101,7 @@ class Dungeon:
                 description="A vast chamber with a vaulted ceiling. Broken statues line the walls, and dust motes dance in shafts of light.",
                 area_type=AreaType.CHAMBER,
                 enemies=["Skeletal Warrior", "Shadow"],
-                treasures=["Ornate Shield", "Scroll of Wisdom"],
+                treasures=self._generate_treasures_for_area_type(AreaType.CHAMBER),
                 exits=["entrance", "throne_room", "crypt"]
             ),
             "side_chamber": Area(
@@ -84,7 +109,7 @@ class Dungeon:
                 description="A smaller room filled with ancient scrolls and stone tablets. Some writings still glow with magical energy.",
                 area_type=AreaType.CHAMBER,
                 enemies=["Animated Book", "Wisp"],
-                treasures=["Spell Scroll", "Ancient Knowledge"],
+                treasures=self._generate_treasures_for_area_type(AreaType.CHAMBER),
                 exits=["entrance", "hidden_passage"]
             ),
             "throne_room": Area(
@@ -92,7 +117,7 @@ class Dungeon:
                 description="A majestic chamber dominated by a massive stone throne. The air hums with ancient power.",
                 area_type=AreaType.BOSS_ROOM,
                 enemies=["Ancient King", "Royal Guards"],
-                treasures=["Crown of Ages", "Royal Scepter"],
+                treasures=self._generate_treasures_for_area_type(AreaType.BOSS_ROOM),
                 exits=["main_hall"]
             ),
             "crypt": Area(
@@ -100,7 +125,7 @@ class Dungeon:
                 description="A solemn burial chamber with ornate sarcophagi. The air is cold and still.",
                 area_type=AreaType.CHAMBER,
                 enemies=["Undead Priest", "Spectral Warriors"],
-                treasures=["Holy Relic", "Burial Mask"],
+                treasures=self._generate_treasures_for_area_type(AreaType.CHAMBER),
                 exits=["main_hall", "treasure_vault"]
             ),
             "hidden_passage": Area(
@@ -108,7 +133,7 @@ class Dungeon:
                 description="A narrow passage hidden behind a false wall. The path winds deeper into darkness.",
                 area_type=AreaType.CORRIDOR,
                 enemies=["Cave Spider"],
-                treasures=["Hidden Cache"],
+                treasures=self._generate_treasures_for_area_type(AreaType.CORRIDOR),
                 exits=["side_chamber", "treasure_vault"]
             ),
             "treasure_vault": Area(
@@ -116,7 +141,7 @@ class Dungeon:
                 description="A sealed chamber filled with gleaming treasures and magical artifacts from a bygone era.",
                 area_type=AreaType.TREASURE_ROOM,
                 enemies=["Treasure Guardian", "Mimic Chest"],
-                treasures=["Golden Artifacts", "Magic Weapons", "Precious Gems"],
+                treasures=self._generate_treasures_for_area_type(AreaType.TREASURE_ROOM),
                 exits=["crypt", "hidden_passage"]
             )
         }
@@ -130,7 +155,7 @@ class Dungeon:
                 description="Ancient trees form a natural archway leading into a mystical grove. Flowers glow softly in the twilight.",
                 area_type=AreaType.ENTRANCE,
                 enemies=["Wild Wolf"],
-                treasures=["Healing Herbs"],
+                treasures=self._generate_treasures_for_area_type(AreaType.ENTRANCE),
                 exits=["sacred_grove", "bramble_path"]
             ),
             "sacred_grove": Area(
@@ -138,7 +163,7 @@ class Dungeon:
                 description="A circular clearing where ancient druids once gathered. The trees whisper ancient secrets.",
                 area_type=AreaType.CHAMBER,
                 enemies=["Dryad", "Treant Sapling"],
-                treasures=["Nature's Blessing", "Druid Staff"],
+                treasures=self._generate_treasures_for_area_type(AreaType.CHAMBER),
                 exits=["entrance", "spirit_pool", "elder_tree"]
             ),
             "bramble_path": Area(
@@ -146,7 +171,7 @@ class Dungeon:
                 description="A winding path through dense brambles and thorns. Something moves in the shadows.",
                 area_type=AreaType.CORRIDOR,
                 enemies=["Thorn Beast", "Poison Ivy"],
-                treasures=["Rare Berries"],
+                treasures=self._generate_treasures_for_area_type(AreaType.CORRIDOR),
                 exits=["entrance", "spider_den"]
             ),
             "spirit_pool": Area(
@@ -154,7 +179,7 @@ class Dungeon:
                 description="A crystal-clear pool reflects the moon above. Ancient spirits dance on the water's surface.",
                 area_type=AreaType.CHAMBER,
                 enemies=["Water Spirit", "Reflection"],
-                treasures=["Moon Stone", "Spirit Essence"],
+                treasures=self._generate_treasures_for_area_type(AreaType.CHAMBER),
                 exits=["sacred_grove", "elder_tree"]
             ),
             "elder_tree": Area(
@@ -162,7 +187,7 @@ class Dungeon:
                 description="A massive ancient tree towers above all others. Its trunk is hollow, forming a natural cathedral.",
                 area_type=AreaType.BOSS_ROOM,
                 enemies=["Elder Treant", "Forest Guardians"],
-                treasures=["Heart of the Forest", "Ancient Wisdom"],
+                treasures=self._generate_treasures_for_area_type(AreaType.BOSS_ROOM),
                 exits=["sacred_grove", "spirit_pool"]
             ),
             "spider_den": Area(
@@ -170,7 +195,7 @@ class Dungeon:
                 description="Thick webs stretch between the trees, creating a maze of silk and shadow.",
                 area_type=AreaType.TRAP_ROOM,
                 enemies=["Giant Spider", "Web Crawler"],
-                treasures=["Silk Armor", "Spider Poison"],
+                treasures=self._generate_treasures_for_area_type(AreaType.TRAP_ROOM),
                 exits=["bramble_path"]
             )
         }
@@ -184,7 +209,7 @@ class Dungeon:
                 description="A dark opening in the mountainside. Cool air flows from the depths, carrying strange echoes.",
                 area_type=AreaType.ENTRANCE,
                 enemies=["Cave Bat"],
-                treasures=["Cave Crystals"],
+                treasures=self._generate_treasures_for_area_type(AreaType.ENTRANCE),
                 exits=["main_tunnel", "shallow_cave"]
             ),
             "main_tunnel": Area(
@@ -192,7 +217,7 @@ class Dungeon:
                 description="A wide tunnel carved by ancient waters. Glowing fungi provide eerie illumination.",
                 area_type=AreaType.CORRIDOR,
                 enemies=["Cave Goblin", "Rock Worm"],
-                treasures=["Mineral Deposits", "Glowing Mushrooms"],
+                treasures=self._generate_treasures_for_area_type(AreaType.CORRIDOR),
                 exits=["entrance", "underground_lake", "crystal_cavern"]
             ),
             "shallow_cave": Area(
@@ -200,7 +225,7 @@ class Dungeon:
                 description="A small cave chamber with a low ceiling. Strange symbols are carved into the walls.",
                 area_type=AreaType.CHAMBER,
                 enemies=["Cave Bear"],
-                treasures=["Ancient Carvings", "Bear Pelt"],
+                treasures=self._generate_treasures_for_area_type(AreaType.CHAMBER),
                 exits=["entrance", "hidden_chamber"]
             ),
             "underground_lake": Area(
@@ -208,7 +233,7 @@ class Dungeon:
                 description="A vast underground lake stretches into darkness. The water is perfectly still and black as night.",
                 area_type=AreaType.CHAMBER,
                 enemies=["Lake Monster", "Blind Fish"],
-                treasures=["Pearls", "Underwater Treasure"],
+                treasures=self._generate_treasures_for_area_type(AreaType.CHAMBER),
                 exits=["main_tunnel", "crystal_cavern"]
             ),
             "crystal_cavern": Area(
@@ -216,7 +241,7 @@ class Dungeon:
                 description="A breathtaking cavern filled with massive crystals that pulse with inner light.",
                 area_type=AreaType.TREASURE_ROOM,
                 enemies=["Crystal Golem", "Living Crystal"],
-                treasures=["Magic Crystals", "Crystal Weapons", "Gem of Power"],
+                treasures=self._generate_treasures_for_area_type(AreaType.TREASURE_ROOM),
                 exits=["main_tunnel", "underground_lake", "deep_chasm"]
             ),
             "hidden_chamber": Area(
@@ -224,7 +249,7 @@ class Dungeon:
                 description="A hidden room behind a rock fall. Ancient tools and weapons are scattered about.",
                 area_type=AreaType.CHAMBER,
                 enemies=["Undead Miner"],
-                treasures=["Ancient Tools", "Hidden Gold"],
+                treasures=self._generate_treasures_for_area_type(AreaType.CHAMBER),
                 exits=["shallow_cave"]
             ),
             "deep_chasm": Area(
@@ -232,8 +257,78 @@ class Dungeon:
                 description="A terrifying chasm that drops into bottomless darkness. Strange sounds echo from below.",
                 area_type=AreaType.BOSS_ROOM,
                 enemies=["Chasm Lord", "Shadow Spawn"],
-                treasures=["Abyssal Artifact", "Shadow Cloak"],
+                treasures=self._generate_treasures_for_area_type(AreaType.BOSS_ROOM),
                 exits=["crystal_cavern"]
+            )
+        }
+        self.areas = areas
+    
+    def _generate_tower_dungeon(self):
+        """Generate a multi-level wizard's tower"""
+        areas = {
+            "entrance": Area(
+                name="Tower Base",
+                description="The base of a towering spire of dark stone. Arcane symbols pulse with blue light around the entrance.",
+                area_type=AreaType.ENTRANCE,
+                enemies=["Magical Ward", "Summoned Guard"],
+                treasures=self._generate_treasures_for_area_type(AreaType.ENTRANCE),
+                exits=["ground_floor", "garden"]
+            ),
+            "ground_floor": Area(
+                name="Ground Floor",
+                description="A circular chamber filled with floating books and swirling magical energies. Stairs spiral upward.",
+                area_type=AreaType.CHAMBER,
+                enemies=["Animated Tome", "Magic Missile Trap"],
+                treasures=self._generate_treasures_for_area_type(AreaType.CHAMBER),
+                exits=["entrance", "second_floor", "basement"]
+            ),
+            "second_floor": Area(
+                name="Second Floor",
+                description="An alchemical laboratory with bubbling cauldrons and shelves of glowing reagents.",
+                area_type=AreaType.CHAMBER,
+                enemies=["Alchemical Golem", "Poison Cloud"],
+                treasures=self._generate_treasures_for_area_type(AreaType.CHAMBER),
+                exits=["ground_floor", "third_floor"]
+            ),
+            "third_floor": Area(
+                name="Third Floor",
+                description="A divination chamber where crystal spheres float in mid-air, showing glimpses of distant places.",
+                area_type=AreaType.PUZZLE_ROOM,
+                enemies=["Scrying Eye", "Time Phantom"],
+                treasures=self._generate_treasures_for_area_type(AreaType.PUZZLE_ROOM),
+                exits=["second_floor", "top_floor", "secret_chamber"]
+            ),
+            "top_floor": Area(
+                name="Archmage's Sanctum",
+                description="The tower's peak, where a powerful archmage once commanded the very forces of magic itself.",
+                area_type=AreaType.BOSS_ROOM,
+                enemies=["Archmage's Spirit", "Elemental Guardians"],
+                treasures=self._generate_treasures_for_area_type(AreaType.BOSS_ROOM),
+                exits=["third_floor"]
+            ),
+            "basement": Area(
+                name="Hidden Vault",
+                description="A hidden chamber beneath the tower, sealed with powerful enchantments.",
+                area_type=AreaType.TREASURE_ROOM,
+                enemies=["Vault Guardian", "Magical Trap"],
+                treasures=self._generate_treasures_for_area_type(AreaType.TREASURE_ROOM),
+                exits=["ground_floor"]
+            ),
+            "secret_chamber": Area(
+                name="Secret Study",
+                description="A hidden room behind a magical illusion, containing the wizard's most private research.",
+                area_type=AreaType.SECRET_ROOM,
+                enemies=["Bound Demon", "Cursed Manuscript"],
+                treasures=self._generate_treasures_for_area_type(AreaType.SECRET_ROOM),
+                exits=["third_floor"]
+            ),
+            "garden": Area(
+                name="Enchanted Garden",
+                description="A mystical garden where magical plants grow under an eternal twilight sky.",
+                area_type=AreaType.CHAMBER,
+                enemies=["Carnivorous Plant", "Garden Sprite"],
+                treasures=self._generate_treasures_for_area_type(AreaType.CHAMBER),
+                exits=["entrance"]
             )
         }
         self.areas = areas
@@ -275,6 +370,7 @@ class WorldManager:
         self.dungeons["ruins"] = Dungeon("Ancient Temple Ruins", "ancient")
         self.dungeons["grove"] = Dungeon("Enchanted Grove", "forest")
         self.dungeons["caves"] = Dungeon("Crystal Caves", "underground")
+        self.dungeons["tower"] = Dungeon("Wizard's Tower", "tower")
         
         # Start in the first dungeon
         self.current_dungeon = "ruins"

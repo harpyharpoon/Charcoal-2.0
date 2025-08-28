@@ -6,6 +6,7 @@ from dataclasses import dataclass, asdict
 from character import Character
 from world import WorldManager, Area
 from ai_dialogue import AIDialogueSystem
+from items import Item
 import config
 
 
@@ -27,7 +28,7 @@ class Party:
         self.characters = characters
         self.log: List[PartyLog] = []
         self.current_hp = {char.name: char.hp for char in characters}
-        self.inventory: List[str] = []
+        self.inventory: List[Item] = []  # Changed from List[str] to List[Item]
         self.experience_gained = 0
         self.areas_discovered = []
         self.active = True
@@ -62,7 +63,8 @@ class Party:
         status += f"Areas discovered: {len(self.areas_discovered)}\n"
         status += f"Experience gained: {self.experience_gained}\n"
         if self.inventory:
-            status += f"Inventory: {', '.join(self.inventory[:3])}"
+            item_names = [item.get_display_name() for item in self.inventory[:3]]
+            status += f"Inventory: {', '.join(item_names)}"
             if len(self.inventory) > 3:
                 status += f" (+{len(self.inventory) - 3} more)"
         return status
@@ -78,7 +80,7 @@ class Party:
             'characters': [char.to_dict() for char in self.characters],
             'log': [asdict(entry) for entry in self.log],
             'current_hp': self.current_hp,
-            'inventory': self.inventory,
+            'inventory': [item.name for item in self.inventory],  # Simplified for now
             'experience_gained': self.experience_gained,
             'areas_discovered': self.areas_discovered,
             'active': self.active
@@ -328,7 +330,7 @@ class PartyManager:
             treasure = random.choice(area.treasures)
             party.inventory.append(treasure)
             
-            discovery_text = f"The party discovers: {treasure}!"
+            discovery_text = f"The party discovers: {treasure.get_display_name()}!"
             party.add_log_entry("discovery", discovery_text, location=area.name)
             events.append({"type": "discovery", "content": discovery_text})
             
@@ -337,6 +339,9 @@ class PartyManager:
             reaction = f"\"Excellent find!\" exclaims {reactor.name}."
             party.add_log_entry("dialogue", f"{reactor.name}: {reaction}", [reactor.name], area.name)
             events.append({"type": "dialogue", "character": reactor.name, "content": reaction})
+            
+            # Remove the treasure from the area so it can't be found again
+            area.treasures.remove(treasure)
         
         return events
     
