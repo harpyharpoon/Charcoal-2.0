@@ -6,10 +6,15 @@ A living MMO-style simulation where AI characters roam, interact, and evolve.
 
 import sys
 import os
+from colorama import init, Fore, Style
 from spectator import SpectatorInterface
+from pub_interface import PubInterface
 from character import CharacterManager
 from world import WorldManager
 from party import PartyManager
+
+# Initialize colorama
+init()
 
 
 def main():
@@ -24,15 +29,55 @@ def main():
             print("💡 To use real AI, set OPENAI_API_KEY in your .env file")
             print()
         
-        # Start the spectator interface
-        interface = SpectatorInterface()
-        interface.start()
+        # Show main menu
+        show_main_menu()
         
     except KeyboardInterrupt:
-        print("\n👋 Thanks for watching Charcoal 2.0!")
+        print("\n👋 Thanks for visiting Charcoal 2.0!")
     except Exception as e:
         print(f"❌ Error starting Charcoal 2.0: {e}")
         sys.exit(1)
+
+
+def show_main_menu():
+    """Show the main menu to choose between Pub and Spectator modes"""
+    print(f"\n{Fore.CYAN}{'═' * 60}")
+    print(f"{Fore.YELLOW}🔥 CHARCOAL 2.0 - MAIN MENU 🔥")
+    print(f"{Fore.CYAN}{'═' * 60}{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}Welcome to the world of AI-powered adventures!")
+    print()
+    print(f"{Fore.GREEN}Choose your experience:{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}1. {Fore.RED}🍺 Enter The Pub{Style.RESET_ALL} - Create characters, check quests, and chat")
+    print(f"{Fore.WHITE}2. {Fore.CYAN}👁️  Spectator Mode{Style.RESET_ALL} - Watch ongoing adventures")
+    print(f"{Fore.WHITE}3. {Fore.YELLOW}🎭 Demo Mode{Style.RESET_ALL} - Quick demonstration")
+    print(f"{Fore.WHITE}4. {Fore.RED}❌ Exit{Style.RESET_ALL}")
+    
+    while True:
+        try:
+            choice = input(f"\n{Fore.CYAN}Enter your choice (1-4): {Style.RESET_ALL}").strip()
+            
+            if choice == "1":
+                print(f"{Fore.YELLOW}🍺 Welcome to The Pub!{Style.RESET_ALL}")
+                interface = PubInterface()
+                interface.start()
+                break
+            elif choice == "2":
+                print(f"{Fore.CYAN}👁️  Starting Spectator Mode...{Style.RESET_ALL}")
+                interface = SpectatorInterface()
+                interface.start()
+                break
+            elif choice == "3":
+                demo_mode()
+                break
+            elif choice == "4":
+                print(f"{Fore.YELLOW}👋 Farewell, adventurer!{Style.RESET_ALL}")
+                break
+            else:
+                print(f"{Fore.RED}❌ Invalid choice. Please enter 1, 2, 3, or 4.{Style.RESET_ALL}")
+                
+        except KeyboardInterrupt:
+            print(f"\n{Fore.YELLOW}👋 Farewell, adventurer!{Style.RESET_ALL}")
+            break
 
 
 def demo_mode():
