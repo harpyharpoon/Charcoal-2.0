@@ -128,5 +128,35 @@
     "level": 1,
     "experience": 0,
     "description": "A noble warrior with a brave personality"
+  },
+  {
+    "name": "TestHero",
+    "character_class": "Warrior",
+    "background": "Noble",
+    "personality": "brave",
+    "hp": 100,
+    "level": 1,
+    "experience": 0,
+    "description": "A noble warrior with a brave personality"
+  },
+  {
+    "name": "TestHero",
+    "character_class": "Warrior",
+    "background": "Noble",
+    "personality": "brave",
+    "hp": 100,
+    "level": 1,
+    "experience": 0,
+    "description": "A noble warrior with a brave personality"
+  },
+  {
+    "name": "TestHero",
+    "character_class": "Warrior",
+    "background": "Noble",
+    "personality": "brave",
+    "hp": 100,
+    "level": 1,
+    "experience": 0,
+    "description": "A noble warrior with a brave personality"
   }
 ]
