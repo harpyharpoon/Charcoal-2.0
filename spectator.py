@@ -252,28 +252,84 @@ class SpectatorInterface:
         print(f"{Fore.CYAN}{'─' * 50}{Style.RESET_ALL}\n")
     
     def _display_adventure_events(self, events: List[Dict]):
-        """Display adventure events in real-time"""
-        for event in events:
+        """Display adventure events with dramatic timing for suspense"""
+        for i, event in enumerate(events):
+            # Add suspenseful delays based on event type and content
+            if event.get("suspense", False):
+                # Longer pause for suspense buildup
+                time.sleep(config.EVENT_BUILDUP_DELAY)
+            elif event["type"] == "dialogue":
+                # Natural speaking pace
+                time.sleep(config.DIALOGUE_DELAY)
+            elif event["type"] == "discovery":
+                # Build anticipation for discoveries
+                time.sleep(config.DISCOVERY_SUSPENSE_DELAY)
+            elif event["type"] == "encounter" or event["type"] == "combat":
+                # Heighten tension for combat
+                time.sleep(config.COMBAT_TENSION_DELAY)
+            else:
+                # Standard pause for other events
+                time.sleep(1.5)
+            
             self._display_event(event)
-            time.sleep(0.5)  # Pause between events for readability
+            
+            # Additional pause after high-tension events
+            tension = event.get("tension", 0)
+            if tension >= 2:
+                time.sleep(1.0)  # Extra pause for high-tension moments
     
     def _display_event(self, event: Dict):
-        """Display a single adventure event"""
+        """Display a single adventure event with enhanced formatting"""
         event_type = event["type"]
+        tension = event.get("tension", 0)
         
+        # Enhance display based on tension level
         if event_type == "narrative":
-            print(f"{Fore.CYAN}📖 {event['content']}{Style.RESET_ALL}")
+            if event.get("suspense", False):
+                print(f"{Fore.LIGHTBLACK_EX}... ... ...{Style.RESET_ALL}")
+                time.sleep(1.0)
+            
+            if tension >= 3:
+                print(f"{Fore.RED}🔥 {event['content']} 🔥{Style.RESET_ALL}")
+            elif tension >= 2:
+                print(f"{Fore.LIGHTRED_EX}📖 {event['content']}{Style.RESET_ALL}")
+            elif tension >= 1:
+                print(f"{Fore.CYAN}📖 {event['content']}{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.CYAN}📖 {event['content']}{Style.RESET_ALL}")
+                
         elif event_type == "dialogue":
             char_name = event.get("character", "Unknown")
-            print(f"{Fore.YELLOW}💬 {char_name}: {Fore.WHITE}{event['content']}{Style.RESET_ALL}")
+            if tension >= 3:
+                print(f"{Fore.YELLOW}💬 {char_name}: {Fore.LIGHTRED_EX}{event['content']}{Style.RESET_ALL}")
+            elif tension >= 2:
+                print(f"{Fore.YELLOW}💬 {char_name}: {Fore.LIGHTMAGENTA_EX}{event['content']}{Style.RESET_ALL}")
+            elif tension >= 1:
+                print(f"{Fore.YELLOW}💬 {char_name}: {Fore.LIGHTYELLOW_EX}{event['content']}{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.YELLOW}💬 {char_name}: {Fore.WHITE}{event['content']}{Style.RESET_ALL}")
+                
         elif event_type == "movement":
             print(f"{Fore.GREEN}🚶 {event['content']}{Style.RESET_ALL}")
+            
         elif event_type == "discovery":
-            print(f"{Fore.MAGENTA}✨ {event['content']}{Style.RESET_ALL}")
+            if tension >= 2:
+                print(f"{Fore.LIGHTMAGENTA_EX}🌟 {event['content']} 🌟{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.MAGENTA}✨ {event['content']}{Style.RESET_ALL}")
+                
         elif event_type == "encounter":
-            print(f"{Fore.RED}⚔️ {event['content']}{Style.RESET_ALL}")
+            if tension >= 2:
+                print(f"{Fore.LIGHTRED_EX}💀 {event['content']} 💀{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.RED}⚔️ {event['content']}{Style.RESET_ALL}")
+                
         elif event_type == "combat":
-            print(f"{Fore.RED}🗡️ {event['content']}{Style.RESET_ALL}")
+            success = event.get("success", True)
+            if success:
+                print(f"{Fore.GREEN}🗡️ {event['content']}{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.RED}💔 {event['content']}{Style.RESET_ALL}")
         else:
             print(f"{Fore.WHITE}📝 {event['content']}{Style.RESET_ALL}")
     

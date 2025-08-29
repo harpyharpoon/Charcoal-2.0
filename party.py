@@ -189,28 +189,57 @@ class PartyManager:
             return "dialogue"
     
     def _handle_exploration(self, party: Party, area: Area, dungeon) -> List[Dict]:
-        """Handle area exploration"""
+        """Handle area exploration with building suspense"""
         events = []
         
-        # Generate narrative
-        narrative = self.dialogue_system.generate_narrative_description(
-            "explore the area carefully", party.characters, area
-        )
+        # Add tension level based on adventure progress
+        tension_level = min(self.adventure_step_count // 3, 3)  # Escalates every 3 steps
         
+        # Generate suspenseful exploration narrative based on area and tension
+        if tension_level == 0:
+            narratives = [
+                f"The party cautiously steps into {area.name}, their footsteps echoing ominously...",
+                f"As they enter {area.name}, a chill runs down their spines...",
+                f"The shadows in {area.name} seem to shift and watch their every move...",
+                f"Something feels wrong about {area.name}, but the party presses forward..."
+            ]
+        elif tension_level == 1:
+            narratives = [
+                f"The oppressive atmosphere of {area.name} weighs heavily on the party's minds...",
+                f"Strange whispers seem to emanate from the very walls of {area.name}...",
+                f"The party's torchlight flickers nervously as they explore {area.name}...",
+                f"An unsettling presence watches from the darkness of {area.name}..."
+            ]
+        elif tension_level == 2:
+            narratives = [
+                f"Terror grips the party as they venture deeper into {area.name}...",
+                f"The very air in {area.name} crackles with malevolent energy...",
+                f"Ancient evils stir as the party disturbs the sanctity of {area.name}...",
+                f"Death itself seems to lurk in every shadow of {area.name}..."
+            ]
+        else:  # Maximum tension
+            narratives = [
+                f"THE DARKNESS OF {area.name.upper()} CONSUMES ALL HOPE...",
+                f"FATE ITSELF TREMBLES AS THE PARTY FACES {area.name.upper()}...",
+                f"THE FINAL HOUR APPROACHES IN THE CURSED REALM OF {area.name.upper()}...",
+                f"LEGENDS WILL BE BORN OR DIE IN {area.name.upper()}..."
+            ]
+        
+        narrative = random.choice(narratives)
         party.add_log_entry(
             "narrative", narrative, location=area.name
         )
-        events.append({"type": "narrative", "content": narrative})
+        events.append({"type": "narrative", "content": narrative, "tension": tension_level})
         
-        # Random character reaction
+        # Character reaction shows rising fear/determination
         reactor = random.choice(party.characters)
-        reaction = self.dialogue_system.generate_area_reaction(reactor, area)
+        reaction = self.dialogue_system.generate_area_reaction(reactor, area, tension_level)
         
         party.add_log_entry(
             "dialogue", f"{reactor.name}: {reaction}", 
             [reactor.name], area.name
         )
-        events.append({"type": "dialogue", "character": reactor.name, "content": reaction})
+        events.append({"type": "dialogue", "character": reactor.name, "content": reaction, "tension": tension_level})
         
         return events
     
@@ -285,63 +314,145 @@ class PartyManager:
         return events
     
     def _handle_encounter(self, party: Party, area: Area) -> List[Dict]:
-        """Handle encounters with enemies or NPCs"""
+        """Handle encounters with enemies or NPCs with dramatic tension"""
         events = []
         
         if not area.enemies:
             return self._handle_discovery(party, area)
         
         enemy = random.choice(area.enemies)
+        tension_level = min(self.adventure_step_count // 3, 3)
         
-        # Generate encounter narrative
-        narrative = f"The party encounters {enemy}!"
+        # Build suspense before revealing the encounter
+        buildup_events = [
+            "The party suddenly freezes... something is watching them.",
+            "A low growl echoes through the shadows ahead...",
+            "The temperature drops as an ancient evil stirs...",
+            "Footsteps that aren't their own echo behind them...",
+            "The very air seems to thicken with malevolent presence..."
+        ]
+        
+        buildup = random.choice(buildup_events)
+        party.add_log_entry("narrative", buildup, location=area.name)
+        events.append({"type": "narrative", "content": buildup, "suspense": True})
+        
+        # Dramatic encounter reveal based on tension level
+        if tension_level <= 1:
+            narrative = f"From the shadows emerges... {enemy}!"
+        elif tension_level == 2:
+            narrative = f"TERROR INCARNATE! A fearsome {enemy} blocks their path!"
+        else:
+            narrative = f"💀 THE ULTIMATE TRIAL! A legendary {enemy} appears, thirsting for blood!"
+        
         party.add_log_entry("encounter", narrative, location=area.name)
-        events.append({"type": "encounter", "content": narrative})
+        events.append({"type": "encounter", "content": narrative, "tension": tension_level})
         
-        # Generate combat dialogue
+        # Generate intense combat dialogue
         fighter = random.choice(party.characters)
-        combat_dialogue = self.dialogue_system.generate_combat_dialogue(fighter, enemy)
+        combat_dialogue = self.dialogue_system.generate_combat_dialogue(fighter, enemy, tension_level)
         party.add_log_entry("dialogue", f"{fighter.name}: {combat_dialogue}", [fighter.name], area.name)
         events.append({"type": "dialogue", "character": fighter.name, "content": combat_dialogue})
         
-        # Simple combat resolution
-        success = random.random() > 0.3  # 70% success rate
+        # Enhanced combat resolution with higher stakes
+        base_success_rate = 0.7 - (tension_level * 0.1)  # Harder as tension rises
+        success = random.random() < base_success_rate
         
         if success:
-            party.experience_gained += random.randint(10, 30)
-            result_text = f"The party defeats the {enemy}!"
+            exp_gain = random.randint(15, 40) + (tension_level * 10)
+            party.experience_gained += exp_gain
+            victory_messages = [
+                f"Against all odds, the party triumphs over the {enemy}!",
+                f"Victory! The {enemy} falls before their united strength!",
+                f"Through courage and skill, they defeat the {enemy}!",
+                f"🏆 LEGENDARY VICTORY! The {enemy} is vanquished!"
+            ]
+            result_text = random.choice(victory_messages)
         else:
-            # Party takes damage
+            # Dramatic injury/failure
             injured = random.choice(party.characters)
-            damage = random.randint(10, 25)
+            damage = random.randint(15, 35) + (tension_level * 5)
             party.current_hp[injured.name] = max(0, party.current_hp[injured.name] - damage)
-            result_text = f"The {enemy} injures {injured.name}! ({damage} damage)"
+            
+            injury_messages = [
+                f"💔 {injured.name} cries out in pain as the {enemy} strikes! ({damage} damage)",
+                f"🩸 The {enemy} lands a devastating blow on {injured.name}! ({damage} damage)",
+                f"⚡ {injured.name} staggers from the {enemy}'s brutal attack! ({damage} damage)",
+                f"💀 CRITICAL HIT! {injured.name} barely survives the {enemy}'s assault! ({damage} damage)"
+            ]
+            result_text = random.choice(injury_messages)
         
         party.add_log_entry("combat", result_text, location=area.name)
-        events.append({"type": "combat", "content": result_text})
+        events.append({"type": "combat", "content": result_text, "success": success})
         
         return events
     
     def _handle_discovery(self, party: Party, area: Area) -> List[Dict]:
-        """Handle treasure or item discovery"""
+        """Handle treasure or item discovery with suspenseful buildup"""
         events = []
         
         if area.treasures:
             treasure = random.choice(area.treasures)
+            tension_level = min(self.adventure_step_count // 3, 3)
+            
+            # Build suspense before the discovery
+            mystery_events = [
+                "Something glimmers in the shadows...",
+                "A faint light emanates from a hidden alcove...",
+                "The party notices something peculiar about this place...",
+                "Ancient magic pulses through the air...",
+                "A secret waits to be uncovered..."
+            ]
+            
+            buildup = random.choice(mystery_events)
+            party.add_log_entry("narrative", buildup, location=area.name)
+            events.append({"type": "narrative", "content": buildup, "suspense": True})
+            
+            # Dramatic discovery reveal
+            rarity_emojis = {"Common": "⭐", "Uncommon": "✨", "Rare": "💎", "Legendary": "🏆", "Mythic": "🌟"}
+            rarity = getattr(treasure, 'rarity', 'Common')
+            emoji = rarity_emojis.get(rarity, "✨")
+            
+            if tension_level == 0:
+                discovery_text = f"The party discovers: {treasure.get_display_name()} {emoji}!"
+            elif tension_level == 1:
+                discovery_text = f"🔮 INCREDIBLE FIND! The party uncovers: {treasure.get_display_name()} {emoji}!"
+            elif tension_level == 2:
+                discovery_text = f"✨ LEGENDARY DISCOVERY! Hidden for ages: {treasure.get_display_name()} {emoji}!"
+            else:
+                discovery_text = f"🌟 MYTHIC TREASURE! The gods smile upon them: {treasure.get_display_name()} {emoji}!"
+            
             party.inventory.append(treasure)
-            
-            discovery_text = f"The party discovers: {treasure.get_display_name()}!"
             party.add_log_entry("discovery", discovery_text, location=area.name)
-            events.append({"type": "discovery", "content": discovery_text})
+            events.append({"type": "discovery", "content": discovery_text, "tension": tension_level})
             
-            # Generate reaction
+            # Enhanced character reactions
             reactor = random.choice(party.characters)
-            reaction = f"\"Excellent find!\" exclaims {reactor.name}."
+            excitement_reactions = [
+                f"\"By the gods! Look at this treasure!\" gasps {reactor.name}.",
+                f"\"This will serve us well in our quest!\" exclaims {reactor.name}.",
+                f"\"Fortune favors the bold!\" cheers {reactor.name}.",
+                f"\"Our luck is changing!\" says {reactor.name} with excitement.",
+                f"\"The ancestors guide our steps!\" whispers {reactor.name} in awe."
+            ]
+            
+            reaction = random.choice(excitement_reactions)
             party.add_log_entry("dialogue", f"{reactor.name}: {reaction}", [reactor.name], area.name)
             events.append({"type": "dialogue", "character": reactor.name, "content": reaction})
             
             # Remove the treasure from the area so it can't be found again
             area.treasures.remove(treasure)
+        else:
+            # No treasure found - add atmosphere
+            empty_searches = [
+                "The party searches thoroughly but finds nothing of value...",
+                "Their hopes are dashed as the search yields nothing...",
+                "The shadows mock their efforts with empty silence...",
+                "Only dust and disappointment await them here..."
+            ]
+            
+            empty_result = random.choice(empty_searches)
+            party.add_log_entry("narrative", empty_result, location=area.name)
+            events.append({"type": "narrative", "content": empty_result})
         
         return events
     
