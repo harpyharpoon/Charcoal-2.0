@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charcoal 2.0 - Adventure Hub</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #1a1a1a;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background-color: #2a2a2a;
+            border: 2px solid #00ff00;
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 0;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            padding: 15px;
+            background-color: #333;
+            border: none;
+            color: #00ff00;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .nav-tab:first-child {
+            border-radius: 8px 0 0 0;
+        }
+        
+        .nav-tab:last-child {
+            border-radius: 0 8px 0 0;
+        }
+        
+        .nav-tab.active {
+            background-color: #005500;
+        }
+        
+        .nav-tab:hover {
+            background-color: #444;
+        }
+        
+        .nav-tab.active:hover {
+            background-color: #006600;
+        }
+        
+        .tab-content {
+            display: none;
+            background-color: #2a2a2a;
+            border: 2px solid #00ff00;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            padding: 20px;
+            min-height: 70vh;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .chat-container {
+            display: flex;
+            gap: 20px;
+            height: 70vh;
+        }
+        
+        .characters-panel {
+            flex: 1;
+            background-color: #2a2a2a;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .chat-panel {
+            flex: 2;
+            background-color: #2a2a2a;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #333;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #1a1a1a;
+        }
+        
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .character-card {
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .character-card:hover {
+            background-color: #444;
+        }
+        
+        .character-card.selected {
+            background-color: #005500;
+            border-color: #00ff00;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            padding: 5px;
+            border-left: 3px solid #00ff00;
+            padding-left: 10px;
+        }
+        
+        .message-header {
+            color: #ffff00;
+            font-weight: bold;
+        }
+        
+        .message-content {
+            color: #ffffff;
+            margin-top: 5px;
+        }
+        
+        .message-time {
+            color: #888;
+            font-size: 0.8em;
+        }
+        
+        input, button, select {
+            background-color: #333;
+            color: #00ff00;
+            border: 1px solid #555;
+            padding: 8px;
+            border-radius: 3px;
+        }
+        
+        button {
+            cursor: pointer;
+            background-color: #005500;
+            border-color: #00ff00;
+        }
+        
+        button:hover {
+            background-color: #007700;
+        }
+        
+        .status {
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #2a2a2a;
+            border-radius: 5px;
+        }
+        
+        .connected {
+            color: #00ff00;
+        }
+        
+        .disconnected {
+            color: #ff0000;
+        }
+        
+        .character-creator {
+            background-color: #2a2a2a;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 10px;
+        }
+        
+        .form-group label {
+            display: inline-block;
+            width: 120px;
+            color: #ffff00;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .inventory-item {
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .inventory-item:hover {
+            background-color: #444;
+            border-color: #00ff00;
+        }
+        
+        .inventory-item.equipped {
+            border-color: #ffff00;
+            background-color: #443300;
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .item-name {
+            font-weight: bold;
+            color: #ffff00;
+        }
+        
+        .item-rarity {
+            color: #888;
+            font-size: 0.8em;
+        }
+        
+        .item-rarity.common { color: #ffffff; }
+        .item-rarity.uncommon { color: #00ff00; }
+        .item-rarity.rare { color: #0088ff; }
+        .item-rarity.epic { color: #aa00ff; }
+        .item-rarity.legendary { color: #ff8800; }
+        
+        .item-stats {
+            font-size: 0.9em;
+            color: #aaa;
+            margin-top: 8px;
+        }
+        
+        .stat-line {
+            margin: 2px 0;
+        }
+        
+        .stats-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .stat-group {
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .stat-group h3 {
+            color: #ffff00;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid #444;
+        }
+        
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-label {
+            color: #aaa;
+        }
+        
+        .stat-value {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        .equipment-slot {
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            transition: all 0.3s;
+        }
+        
+        .equipment-slot.has-item {
+            border-color: #00ff00;
+            background-color: #223322;
+        }
+        
+        .equipment-slot.has-item:hover {
+            background-color: #334433;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #888;
+            padding: 50px;
+        }
+        
+        .error {
+            color: #ff0000;
+            background-color: #330000;
+            border: 1px solid #ff0000;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .quest-card {
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        
+        .quest-card:hover {
+            background-color: #444;
+            border-color: #00ff00;
+        }
+        
+        .quest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .quest-title {
+            color: #ffff00;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .quest-difficulty {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .quest-difficulty.easy { background-color: #004400; color: #00ff00; }
+        .quest-difficulty.medium { background-color: #444400; color: #ffff00; }
+        .quest-difficulty.hard { background-color: #440000; color: #ff0000; }
+        
+        .quest-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        
+        .quest-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .friend-item {
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .friend-info {
+            flex: 1;
+        }
+        
+        .friend-name {
+            color: #ffff00;
+            font-weight: bold;
+        }
+        
+        .friend-details {
+            color: #aaa;
+            font-size: 0.9em;
+        }
+        
+        .friend-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-indicator.online { background-color: #00ff00; }
+        .status-indicator.offline { background-color: #888; }
+        
+        .add-friend-form {
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .party-creator {
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .character-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .character-option {
+            background-color: #444;
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .character-option:hover {
+            background-color: #555;
+        }
+        
+        .character-option.selected {
+            background-color: #005500;
+            border-color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 CHARCOAL 2.0 - ADVENTURE HUB 🔥</h1>
+            <div class="status">
+                WebSocket: <span id="connectionStatus" class="disconnected">Disconnected</span>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('characters')">Characters</button>
+            <button class="nav-tab" onclick="switchTab('chat')">Chat</button>
+            <button class="nav-tab" onclick="switchTab('inventory')">Inventory</button>
+            <button class="nav-tab" onclick="switchTab('stats')">Stats</button>
+            <button class="nav-tab" onclick="switchTab('friends')">Friends</button>
+            <button class="nav-tab" onclick="switchTab('quests')">Quests</button>
+        </div>
+
+        <!-- Characters Tab -->
+        <div id="characters-tab" class="tab-content active">
+            <!-- Character Creator -->
+            <div class="character-creator">
+                <h2>Create Character</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Name:</label>
+                        <input type="text" id="charName" placeholder="Enter character name">
+                    </div>
+                    <div class="form-group">
+                        <label>Class:</label>
+                        <select id="charClass">
+                            <option value="Warrior">Warrior</option>
+                            <option value="Mage">Mage</option>
+                            <option value="Rogue">Rogue</option>
+                            <option value="Cleric">Cleric</option>
+                            <option value="Paladin">Paladin</option>
+                            <option value="Archer">Archer</option>
+                            <option value="Bard">Bard</option>
+                            <option value="Druid">Druid</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Background:</label>
+                        <select id="charBackground">
+                            <option value="Noble">Noble</option>
+                            <option value="Criminal">Criminal</option>
+                            <option value="Folk Hero">Folk Hero</option>
+                            <option value="Sage">Sage</option>
+                            <option value="Soldier">Soldier</option>
+                            <option value="Hermit">Hermit</option>
+                            <option value="Entertainer">Entertainer</option>
+                            <option value="Outlander">Outlander</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Personality:</label>
+                        <select id="charPersonality">
+                            <option value="brave">Brave</option>
+                            <option value="cautious">Cautious</option>
+                            <option value="curious">Curious</option>
+                            <option value="hot-headed">Hot-headed</option>
+                            <option value="wise">Wise</option>
+                            <option value="mischievous">Mischievous</option>
+                            <option value="loyal">Loyal</option>
+                            <option value="independent">Independent</option>
+                            <option value="cheerful">Cheerful</option>
+                            <option value="serious">Serious</option>
+                            <option value="witty">Witty</option>
+                            <option value="stoic">Stoic</option>
+                        </select>
+                    </div>
+                    <button onclick="createCharacter()">Create Character</button>
+                </div>
+            </div>
+
+            <div class="two-column">
+                <!-- Available Characters -->
+                <div>
+                    <h3>🛡️ Available Characters</h3>
+                    <div id="charactersList">
+                        <!-- Characters will be loaded here -->
+                    </div>
+                    <button onclick="loadCharacters()">Refresh Characters</button>
+                </div>
+
+                <!-- Selected Character Info -->
+                <div>
+                    <h3>Selected Character</h3>
+                    <div id="selectedCharacterInfo">
+                        <p>Select a character to view details</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Tab -->
+        <div id="chat-tab" class="tab-content">
+            <div class="chat-container">
+                <!-- Chat Panel -->
+                <div class="chat-panel">
+                    <h3>💬 Pub Chat</h3>
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Chat messages will appear here -->
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="messageInput" placeholder="Type your message..." style="flex: 1;">
+                        <button onclick="sendMessage()">Send</button>
+                        <button onclick="generateAIResponse()">AI Response</button>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.9em; color: #888;">
+                        Selected Character: <span id="selectedCharacterName">None</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Tab -->
+        <div id="inventory-tab" class="tab-content">
+            <div id="inventoryContent">
+                <div class="loading">Select a character to view inventory</div>
+            </div>
+        </div>
+
+        <!-- Stats Tab -->
+        <div id="stats-tab" class="tab-content">
+            <div id="statsContent">
+                <div class="loading">Select a character to view stats</div>
+            </div>
+        </div>
+
+        <!-- Quests Tab -->
+        <div id="quests-tab" class="tab-content">
+            <div id="questsContent">
+                <div class="loading">Loading available quests...</div>
+            </div>
+        </div>
+
+        <!-- Friends Tab -->
+        <div id="friends-tab" class="tab-content">
+            <div id="friendsContent">
+                <div class="loading">Select a character to view friends</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let websocket = null;
+        let selectedCharacter = null;
+        let characters = [];
+        let currentInventory = null;
+        let currentStats = null;
+        const API_BASE = 'http://localhost:8000';
+
+        // Tab Management
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+            
+            // Load data for specific tabs
+            if (tabName === 'inventory' && selectedCharacter) {
+                loadInventory();
+            } else if (tabName === 'stats' && selectedCharacter) {
+                loadStats();
+            } else if (tabName === 'friends' && selectedCharacter) {
+                loadFriends();
+            } else if (tabName === 'quests') {
+                loadQuests();
+            }
+        }
+
+        // WebSocket connection
+        function connectWebSocket() {
+            try {
+                websocket = new WebSocket('ws://localhost:8000/ws');
+                
+                websocket.onopen = function(event) {
+                    console.log('WebSocket connected');
+                    document.getElementById('connectionStatus').textContent = 'Connected';
+                    document.getElementById('connectionStatus').className = 'connected';
+                };
+                
+                websocket.onmessage = function(event) {
+                    const message = JSON.parse(event.data);
+                    console.log('Received message:', message);
+                    
+                    if (message.type === 'chat_message') {
+                        displayMessage(message.data);
+                    }
+                };
+                
+                websocket.onclose = function(event) {
+                    console.log('WebSocket disconnected');
+                    document.getElementById('connectionStatus').textContent = 'Disconnected';
+                    document.getElementById('connectionStatus').className = 'disconnected';
+                    
+                    // Attempt to reconnect after 3 seconds
+                    setTimeout(connectWebSocket, 3000);
+                };
+                
+                websocket.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                };
+            } catch (error) {
+                console.error('Failed to connect WebSocket:', error);
+                setTimeout(connectWebSocket, 3000);
+            }
+        }
+
+        // API functions
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                };
+                
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+                
+                const response = await fetch(API_BASE + endpoint, options);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                throw error;
+            }
+        }
+
+        // Character management
+        async function createCharacter() {
+            const name = document.getElementById('charName').value.trim();
+            const characterClass = document.getElementById('charClass').value;
+            const background = document.getElementById('charBackground').value;
+            const personality = document.getElementById('charPersonality').value;
+            
+            if (!name) {
+                alert('Please enter a character name');
+                return;
+            }
+            
+            try {
+                const character = await apiCall('/api/v1/characters', 'POST', {
+                    name: name,
+                    character_class: characterClass,
+                    background: background,
+                    personality: personality
+                });
+                
+                console.log('Character created:', character);
+                document.getElementById('charName').value = '';
+                await loadCharacters();
+                alert(`Character "${character.name}" created successfully!`);
+            } catch (error) {
+                alert('Failed to create character: ' + error.message);
+            }
+        }
+
+        async function loadCharacters() {
+            try {
+                const response = await apiCall('/api/v1/characters');
+                characters = response.characters;
+                displayCharacters();
+            } catch (error) {
+                console.error('Failed to load characters:', error);
+                document.getElementById('charactersList').innerHTML = '<p>Failed to load characters</p>';
+            }
+        }
+
+        function displayCharacters() {
+            const container = document.getElementById('charactersList');
+            container.innerHTML = '';
+            
+            characters.forEach(character => {
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                card.onclick = () => selectCharacter(character);
+                
+                card.innerHTML = `
+                    <div><strong>${character.name}</strong></div>
+                    <div>${character.character_class}</div>
+                    <div style="font-size: 0.8em; color: #888;">${character.background} • ${character.personality}</div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        function selectCharacter(character) {
+            selectedCharacter = character;
+            document.getElementById('selectedCharacterName').textContent = character.name;
+            
+            // Update visual selection
+            document.querySelectorAll('.character-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.character-card').classList.add('selected');
+            
+            // Update selected character info
+            updateSelectedCharacterInfo(character);
+            
+            // Refresh current tab data if relevant
+            const activeTab = document.querySelector('.tab-content.active').id;
+            if (activeTab === 'inventory-tab') {
+                loadInventory();
+            } else if (activeTab === 'stats-tab') {
+                loadStats();
+            } else if (activeTab === 'friends-tab') {
+                loadFriends();
+            }
+        }
+
+        function updateSelectedCharacterInfo(character) {
+            const infoDiv = document.getElementById('selectedCharacterInfo');
+            infoDiv.innerHTML = `
+                <div class="character-card selected">
+                    <div><strong>${character.name}</strong></div>
+                    <div>Class: ${character.character_class}</div>
+                    <div>Background: ${character.background}</div>
+                    <div>Personality: ${character.personality}</div>
+                    <div style="margin-top: 10px;">
+                        <button onclick="loadInventory(); switchTab('inventory')">View Inventory</button>
+                        <button onclick="loadStats(); switchTab('stats')" style="margin-left: 10px;">View Stats</button>
+                        <button onclick="loadFriends(); switchTab('friends')" style="margin-left: 10px;">View Friends</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Chat functions
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+            if (!selectedCharacter) {
+                alert('Please select a character first');
+                return;
+            }
+            
+            try {
+                await apiCall('/api/v1/chat/messages', 'POST', {
+                    character_id: selectedCharacter.name,
+                    message: message,
+                    chat_type: 'pub'
+                });
+                
+                messageInput.value = '';
+            } catch (error) {
+                alert('Failed to send message: ' + error.message);
+            }
+        }
+
+        async function generateAIResponse() {
+            if (!selectedCharacter) {
+                alert('Please select a character first');
+                return;
+            }
+            
+            try {
+                const response = await apiCall('/api/v1/chat/ai-response', 'POST', {
+                    character_id: selectedCharacter.name,
+                    context: "You are in a cozy pub called 'The Pub'. You're chatting with other patrons.",
+                    prompt: "Generate a casual greeting or comment",
+                    conversation_type: "pub_chat"
+                });
+                
+                // Send the AI response as a chat message
+                await apiCall('/api/v1/chat/messages', 'POST', {
+                    character_id: selectedCharacter.name,
+                    message: response.response,
+                    chat_type: 'pub'
+                });
+                
+            } catch (error) {
+                alert('Failed to generate AI response: ' + error.message);
+            }
+        }
+
+        function displayMessage(messageData) {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            
+            const timestamp = new Date(messageData.timestamp).toLocaleTimeString();
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    ${messageData.character_name}
+                    <span class="message-time">[${timestamp}]</span>
+                </div>
+                <div class="message-content">${messageData.message}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        async function loadChatHistory() {
+            try {
+                const response = await apiCall('/api/v1/chat/messages?limit=50');
+                response.messages.forEach(message => {
+                    displayMessage(message);
+                });
+            } catch (error) {
+                console.error('Failed to load chat history:', error);
+            }
+        }
+
+        // Inventory Management
+        async function loadInventory() {
+            if (!selectedCharacter) {
+                document.getElementById('inventoryContent').innerHTML = '<div class="loading">Select a character to view inventory</div>';
+                return;
+            }
+            
+            document.getElementById('inventoryContent').innerHTML = '<div class="loading">Loading inventory...</div>';
+            
+            try {
+                const response = await apiCall(`/api/v1/characters/${selectedCharacter.name}/inventory`);
+                currentInventory = response;
+                displayInventory(response);
+            } catch (error) {
+                console.error('Failed to load inventory:', error);
+                document.getElementById('inventoryContent').innerHTML = '<div class="error">Failed to load inventory: ' + error.message + '</div>';
+            }
+        }
+
+        function displayInventory(inventoryData) {
+            const container = document.getElementById('inventoryContent');
+            
+            const equippedItems = inventoryData.inventory.filter(item => item.equipped);
+            const unequippedItems = inventoryData.inventory.filter(item => !item.equipped);
+            
+            container.innerHTML = `
+                <h2>📦 ${inventoryData.character_name}'s Inventory</h2>
+                <p>Carrying: ${inventoryData.carrying_capacity}</p>
+                
+                <div class="two-column">
+                    <div>
+                        <h3>🛡️ Equipped Items</h3>
+                        <div id="equippedItems">
+                            ${equippedItems.length > 0 ? 
+                                equippedItems.map(item => createInventoryItemHTML(item)).join('') :
+                                '<div class="equipment-slot">No equipped items</div>'
+                            }
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3>🎒 Inventory Items</h3>
+                        <div class="inventory-grid">
+                            ${unequippedItems.map(item => createInventoryItemHTML(item)).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createInventoryItemHTML(item) {
+            const statsText = [];
+            if (item.stats.attack > 0) statsText.push(`⚔️ +${item.stats.attack} Attack`);
+            if (item.stats.defense > 0) statsText.push(`🛡️ +${item.stats.defense} Defense`);
+            if (item.stats.magic_power > 0) statsText.push(`✨ +${item.stats.magic_power} Magic`);
+            if (item.stats.health > 0) statsText.push(`❤️ +${item.stats.health} Health`);
+            
+            return `
+                <div class="inventory-item ${item.equipped ? 'equipped' : ''}" onclick="toggleEquipment('${item.id}')">
+                    <div class="item-header">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-rarity ${item.rarity}">${item.rarity}</div>
+                    </div>
+                    <div style="color: #aaa; font-size: 0.9em; margin: 5px 0;">${item.description}</div>
+                    <div class="item-stats">
+                        ${statsText.join('<br>')}
+                        ${item.equipped ? '<br><strong style="color: #ffff00;">✓ EQUIPPED</strong>' : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function toggleEquipment(itemId) {
+            if (!selectedCharacter) return;
+            
+            try {
+                const response = await apiCall(`/api/v1/characters/${selectedCharacter.name}/inventory/equip`, 'POST', {
+                    item_id: itemId
+                });
+                
+                console.log('Equipment toggle result:', response);
+                // Reload inventory to show updated state
+                await loadInventory();
+                
+                // Also refresh stats if stats tab is visible
+                if (document.getElementById('stats-tab').classList.contains('active')) {
+                    await loadStats();
+                }
+                
+            } catch (error) {
+                console.error('Failed to toggle equipment:', error);
+                alert('Failed to equip item: ' + error.message);
+            }
+        }
+
+        // Stats Management
+        async function loadStats() {
+            if (!selectedCharacter) {
+                document.getElementById('statsContent').innerHTML = '<div class="loading">Select a character to view stats</div>';
+                return;
+            }
+            
+            document.getElementById('statsContent').innerHTML = '<div class="loading">Loading stats...</div>';
+            
+            try {
+                const response = await apiCall(`/api/v1/characters/${selectedCharacter.name}/stats`);
+                currentStats = response;
+                displayStats(response);
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+                document.getElementById('statsContent').innerHTML = '<div class="error">Failed to load stats: ' + error.message + '</div>';
+            }
+        }
+
+        function displayStats(statsData) {
+            const container = document.getElementById('statsContent');
+            
+            const baseStats = statsData.base_stats;
+            const bonuses = statsData.equipment_bonuses;
+            
+            container.innerHTML = `
+                <h2>📊 ${statsData.character_name}'s Stats</h2>
+                <div class="stats-panel">
+                    <div class="stat-group">
+                        <h3>Character Info</h3>
+                        <div class="stat-item">
+                            <span class="stat-label">Name:</span>
+                            <span class="stat-value">${statsData.character_name}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Class:</span>
+                            <span class="stat-value">${statsData.character_class}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Background:</span>
+                            <span class="stat-value">${statsData.background}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Personality:</span>
+                            <span class="stat-value">${statsData.personality}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-group">
+                        <h3>Core Stats</h3>
+                        <div class="stat-item">
+                            <span class="stat-label">Level:</span>
+                            <span class="stat-value">${baseStats.level}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Experience:</span>
+                            <span class="stat-value">${baseStats.experience}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Health:</span>
+                            <span class="stat-value">${baseStats.hp}/${baseStats.max_hp}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Strength:</span>
+                            <span class="stat-value">${baseStats.strength}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Dexterity:</span>
+                            <span class="stat-value">${baseStats.dexterity}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Intelligence:</span>
+                            <span class="stat-value">${baseStats.intelligence}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Constitution:</span>
+                            <span class="stat-value">${baseStats.constitution}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-group">
+                        <h3>Equipment Bonuses</h3>
+                        <div class="stat-item">
+                            <span class="stat-label">Attack Bonus:</span>
+                            <span class="stat-value">+${bonuses.attack}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Defense Bonus:</span>
+                            <span class="stat-value">+${bonuses.defense}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Magic Bonus:</span>
+                            <span class="stat-value">+${bonuses.magic_power}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Health Bonus:</span>
+                            <span class="stat-value">+${bonuses.health}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-group">
+                        <h3>Equipped Items</h3>
+                        ${statsData.equipped_items.length > 0 ? 
+                            statsData.equipped_items.map(item => `
+                                <div class="equipment-slot has-item">
+                                    <div>
+                                        <strong>${item.name}</strong><br>
+                                        <small style="color: #888;">${item.item_type} • ${item.rarity}</small>
+                                    </div>
+                                </div>
+                            `).join('') :
+                            '<div class="equipment-slot">No items equipped</div>'
+                        }
+                    </div>
+                </div>
+            `;
+        }
+
+        // Friends Management
+        async function loadFriends() {
+            if (!selectedCharacter) {
+                document.getElementById('friendsContent').innerHTML = '<div class="loading">Select a character to view friends</div>';
+                return;
+            }
+            
+            document.getElementById('friendsContent').innerHTML = '<div class="loading">Loading friends...</div>';
+            
+            try {
+                const response = await apiCall(`/api/v1/characters/${selectedCharacter.name}/friends`);
+                displayFriends(response);
+            } catch (error) {
+                console.error('Failed to load friends:', error);
+                document.getElementById('friendsContent').innerHTML = '<div class="error">Failed to load friends: ' + error.message + '</div>';
+            }
+        }
+
+        function displayFriends(friendsData) {
+            const container = document.getElementById('friendsContent');
+            
+            container.innerHTML = `
+                <h2>👥 ${friendsData.character_id}'s Friends</h2>
+                <p>Total Friends: ${friendsData.total_friends}</p>
+                
+                <!-- Add Friend Form -->
+                <div class="add-friend-form">
+                    <h3>Add Friend</h3>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="friendNameInput" placeholder="Enter character name" style="flex: 1;">
+                        <button onclick="addFriend()">Add Friend</button>
+                    </div>
+                </div>
+                
+                <!-- Friends List -->
+                <div>
+                    <h3>Friends List</h3>
+                    ${friendsData.friends.length > 0 ? 
+                        friendsData.friends.map(friend => `
+                            <div class="friend-item">
+                                <div class="friend-info">
+                                    <div class="friend-name">${friend.name}</div>
+                                    <div class="friend-details">${friend.character_class} • Level ${friend.level} • ${friend.background}</div>
+                                </div>
+                                <div class="friend-status">
+                                    <span class="status-indicator ${friend.online ? 'online' : 'offline'}"></span>
+                                    <span>${friend.online ? 'Online' : 'Offline'}</span>
+                                </div>
+                            </div>
+                        `).join('') :
+                        '<div class="loading">No friends yet. Add some friends to start your adventure!</div>'
+                    }
+                </div>
+            `;
+        }
+
+        async function addFriend() {
+            const friendName = document.getElementById('friendNameInput').value.trim();
+            if (!friendName) {
+                alert('Please enter a friend name');
+                return;
+            }
+            
+            if (!selectedCharacter) {
+                alert('Please select a character first');
+                return;
+            }
+            
+            try {
+                const response = await apiCall(`/api/v1/characters/${selectedCharacter.name}/friends`, 'POST', {
+                    friend_name: friendName
+                });
+                
+                console.log('Friend added:', response);
+                document.getElementById('friendNameInput').value = '';
+                await loadFriends(); // Refresh friends list
+                alert(`Added ${friendName} as friend!`);
+            } catch (error) {
+                console.error('Failed to add friend:', error);
+                alert('Failed to add friend: ' + error.message);
+            }
+        }
+
+        // Quest Board Management
+        async function loadQuests() {
+            document.getElementById('questsContent').innerHTML = '<div class="loading">Loading quests...</div>';
+            
+            try {
+                const response = await apiCall('/api/v1/quests');
+                displayQuests(response);
+            } catch (error) {
+                console.error('Failed to load quests:', error);
+                document.getElementById('questsContent').innerHTML = '<div class="error">Failed to load quests: ' + error.message + '</div>';
+            }
+        }
+
+        function displayQuests(questsData) {
+            const container = document.getElementById('questsContent');
+            
+            container.innerHTML = `
+                <h2>🗡️ Quest Board</h2>
+                <p>Available Quests: ${questsData.total}</p>
+                
+                <div class="quests-list">
+                    ${questsData.quests.map(quest => `
+                        <div class="quest-card">
+                            <div class="quest-header">
+                                <div class="quest-title">${quest.title}</div>
+                                <div class="quest-difficulty ${quest.difficulty.toLowerCase()}">${quest.difficulty}</div>
+                            </div>
+                            <div style="color: #aaa; margin: 10px 0;">${quest.description}</div>
+                            <div class="quest-info">
+                                <div><strong>Location:</strong> ${quest.location}</div>
+                                <div><strong>Required Level:</strong> ${quest.required_level}</div>
+                                <div><strong>Max Party Size:</strong> ${quest.max_party_size}</div>
+                                <div><strong>Reward:</strong> ${quest.reward}</div>
+                            </div>
+                            <div class="quest-actions">
+                                <button onclick="showPartyCreator('${quest.id}')">Create Party</button>
+                                <button onclick="viewQuestDetails('${quest.id}')">View Details</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <!-- Party Creator (hidden by default) -->
+                <div id="partyCreator" class="party-creator" style="display: none;">
+                    <h3>Create Party for Quest</h3>
+                    <div id="partyCreatorContent">
+                        <!-- Content will be filled by showPartyCreator -->
+                    </div>
+                </div>
+            `;
+        }
+
+        async function showPartyCreator(questId) {
+            const partyCreator = document.getElementById('partyCreator');
+            const content = document.getElementById('partyCreatorContent');
+            
+            try {
+                // Get quest details
+                const questsResponse = await apiCall('/api/v1/quests');
+                const quest = questsResponse.quests.find(q => q.id === questId);
+                
+                if (!quest) {
+                    alert('Quest not found');
+                    return;
+                }
+                
+                content.innerHTML = `
+                    <div><strong>Quest:</strong> ${quest.title}</div>
+                    <div style="margin: 10px 0;">
+                        <label>Party Name:</label>
+                        <input type="text" id="partyNameInput" placeholder="Enter party name" style="margin-left: 10px; width: 200px;">
+                    </div>
+                    
+                    <div>
+                        <h4>Select Characters (Max: ${quest.max_party_size})</h4>
+                        <div class="character-selector" id="characterSelector">
+                            ${characters.map(char => `
+                                <div class="character-option" onclick="toggleCharacterSelection('${char.name}')">
+                                    <div><strong>${char.name}</strong></div>
+                                    <div style="font-size: 0.8em; color: #888;">${char.character_class}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <button onclick="createParty('${questId}')">Create Party</button>
+                        <button onclick="hidePartyCreator()" style="margin-left: 10px;">Cancel</button>
+                    </div>
+                `;
+                
+                partyCreator.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Failed to show party creator:', error);
+                alert('Failed to load party creator: ' + error.message);
+            }
+        }
+
+        let selectedPartyMembers = [];
+
+        function toggleCharacterSelection(charName) {
+            const index = selectedPartyMembers.indexOf(charName);
+            const charElement = event.target.closest('.character-option');
+            
+            if (index > -1) {
+                // Remove from selection
+                selectedPartyMembers.splice(index, 1);
+                charElement.classList.remove('selected');
+            } else {
+                // Add to selection
+                selectedPartyMembers.push(charName);
+                charElement.classList.add('selected');
+            }
+        }
+
+        async function createParty(questId) {
+            const partyName = document.getElementById('partyNameInput').value.trim();
+            
+            if (!partyName) {
+                alert('Please enter a party name');
+                return;
+            }
+            
+            if (selectedPartyMembers.length === 0) {
+                alert('Please select at least one character');
+                return;
+            }
+            
+            try {
+                const response = await apiCall(`/api/v1/quests/${questId}/parties`, 'POST', {
+                    name: partyName,
+                    character_ids: selectedPartyMembers
+                });
+                
+                console.log('Party created:', response);
+                alert(`Party "${partyName}" created successfully!`);
+                hidePartyCreator();
+                selectedPartyMembers = [];
+                
+            } catch (error) {
+                console.error('Failed to create party:', error);
+                alert('Failed to create party: ' + error.message);
+            }
+        }
+
+        function hidePartyCreator() {
+            document.getElementById('partyCreator').style.display = 'none';
+            selectedPartyMembers = [];
+        }
+
+        function viewQuestDetails(questId) {
+            // This could open a modal or navigate to a detailed quest view
+            alert('Quest details feature coming soon!');
+        }
+
+        // Event handlers
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Initialize the application
+        window.onload = function() {
+            connectWebSocket();
+            loadCharacters();
+            loadChatHistory();
+        };
+    </script>
+</body>
+</html>

@@ -80,83 +80,23 @@
     "description": "A hermit druid with a wise personality"
   },
   {
-    "name": "TestHero",
+    "name": "API Test Hero",
     "character_class": "Warrior",
-    "background": "Noble",
+    "background": "Soldier",
     "personality": "brave",
     "hp": 100,
     "level": 1,
     "experience": 0,
-    "description": "A noble warrior with a brave personality"
+    "description": "A soldier warrior with a brave personality"
   },
   {
-    "name": "TestHero",
-    "character_class": "Warrior",
-    "background": "Noble",
-    "personality": "brave",
+    "name": "Demo Wizard",
+    "character_class": "Mage",
+    "background": "Sage",
+    "personality": "wise",
     "hp": 100,
     "level": 1,
     "experience": 0,
-    "description": "A noble warrior with a brave personality"
-  },
-  {
-    "name": "TestHero",
-    "character_class": "Warrior",
-    "background": "Noble",
-    "personality": "brave",
-    "hp": 100,
-    "level": 1,
-    "experience": 0,
-    "description": "A noble warrior with a brave personality"
-  },
-  {
-    "name": "TestHero",
-    "character_class": "Warrior",
-    "background": "Noble",
-    "personality": "brave",
-    "hp": 100,
-    "level": 1,
-    "experience": 0,
-    "description": "A noble warrior with a brave personality"
-  },
-  {
-    "name": "TestHero",
-    "character_class": "Warrior",
-    "background": "Noble",
-    "personality": "brave",
-    "hp": 100,
-    "level": 1,
-    "experience": 0,
-    "description": "A noble warrior with a brave personality"
-  },
-  {
-    "name": "TestHero",
-    "character_class": "Warrior",
-    "background": "Noble",
-    "personality": "brave",
-    "hp": 100,
-    "level": 1,
-    "experience": 0,
-    "description": "A noble warrior with a brave personality"
-  },
-  {
-    "name": "TestHero",
-    "character_class": "Warrior",
-    "background": "Noble",
-    "personality": "brave",
-    "hp": 100,
-    "level": 1,
-    "experience": 0,
-    "description": "A noble warrior with a brave personality"
-  },
-  {
-    "name": "TestHero",
-    "character_class": "Warrior",
-    "background": "Noble",
-    "personality": "brave",
-    "hp": 100,
-    "level": 1,
-    "experience": 0,
-    "description": "A noble warrior with a brave personality"
+    "description": "A sage mage with a wise personality"
   }
 ]

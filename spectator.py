@@ -5,6 +5,7 @@ from character import CharacterManager
 from world import WorldManager
 from party import PartyManager, Party
 import config
+from colorama import init, Fore, Style
 
 from colorama import init, Fore, Style
 
