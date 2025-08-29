@@ -2183,5 +2183,138 @@
     "permadeath_enabled": false,
     "death_count": 0,
     "description": "A sage mage with a hot-headed personality. Known for being Intimidating Presence, Natural Leader."
+  },
+  {
+    "name": "Thorin Ironforge",
+    "character_class": "Warrior",
+    "background": "Soldier",
+    "personality": "brave",
+    "stats": {
+      "hp": 100,
+      "max_hp": 100,
+      "level": 1,
+      "experience": 0,
+      "strength": 13,
+      "dexterity": 10,
+      "intelligence": 10,
+      "constitution": 12,
+      "charisma": 10,
+      "attack_bonus": 15,
+      "defense_bonus": 0,
+      "magic_power_bonus": 0,
+      "health_bonus": 0,
+      "critical_chance": 10,
+      "damage_resistance": 10,
+      "magic_resistance": 0,
+      "luck_bonus": 0
+    },
+    "traits": [
+      "Battle Hardened",
+      "Weapon Master",
+      "Natural Leader"
+    ],
+    "starting_gear_choice": "Guardian's Arsenal",
+    "permadeath_enabled": true,
+    "death_count": 0,
+    "description": "A soldier warrior with a brave personality. Known for being Battle Hardened, Weapon Master."
+  },
+  {
+    "name": "Sir Gareth",
+    "character_class": "Paladin",
+    "background": "Soldier",
+    "personality": "independent",
+    "stats": {
+      "hp": 100,
+      "max_hp": 100,
+      "level": 1,
+      "experience": 0,
+      "strength": 12,
+      "dexterity": 10,
+      "intelligence": 10,
+      "constitution": 10,
+      "charisma": 12,
+      "attack_bonus": 0,
+      "defense_bonus": 0,
+      "magic_power_bonus": 0,
+      "health_bonus": 0,
+      "critical_chance": 5,
+      "damage_resistance": 10,
+      "magic_resistance": 0,
+      "luck_bonus": 0
+    },
+    "traits": [
+      "Battle Hardened",
+      "Natural Leader"
+    ],
+    "starting_gear_choice": "Specialized Paladin",
+    "permadeath_enabled": true,
+    "death_count": 0,
+    "description": "A soldier paladin with a independent personality. Known for being Battle Hardened, Natural Leader."
+  },
+  {
+    "name": "Zara Swiftblade",
+    "character_class": "Rogue",
+    "background": "Sage",
+    "personality": "loyal",
+    "stats": {
+      "hp": 100,
+      "max_hp": 100,
+      "level": 1,
+      "experience": 0,
+      "strength": 10,
+      "dexterity": 13,
+      "intelligence": 11,
+      "constitution": 10,
+      "charisma": 10,
+      "attack_bonus": 15,
+      "defense_bonus": 0,
+      "magic_power_bonus": 0,
+      "health_bonus": 0,
+      "critical_chance": 10,
+      "damage_resistance": 0,
+      "magic_resistance": 0,
+      "luck_bonus": 15
+    },
+    "traits": [
+      "Weapon Master",
+      "Lucky"
+    ],
+    "starting_gear_choice": "Treasure Hunter",
+    "permadeath_enabled": true,
+    "death_count": 0,
+    "description": "A sage rogue with a loyal personality. Known for being Weapon Master, Lucky."
+  },
+  {
+    "name": "Lyra Starweaver",
+    "character_class": "Mage",
+    "background": "Soldier",
+    "personality": "serious",
+    "stats": {
+      "hp": 100,
+      "max_hp": 100,
+      "level": 1,
+      "experience": 0,
+      "strength": 10,
+      "dexterity": 10,
+      "intelligence": 13,
+      "constitution": 10,
+      "charisma": 11,
+      "attack_bonus": 0,
+      "defense_bonus": 0,
+      "magic_power_bonus": 20,
+      "health_bonus": 0,
+      "critical_chance": 5,
+      "damage_resistance": 0,
+      "magic_resistance": 15,
+      "luck_bonus": 0
+    },
+    "traits": [
+      "Arcane Scholar",
+      "Mana Touched"
+    ],
+    "starting_gear_choice": "Hedge Wizard",
+    "permadeath_enabled": true,
+    "death_count": 0,
+    "description": "A soldier mage with a serious personality. Known for being Arcane Scholar, Mana Touched."
   }
 ]
