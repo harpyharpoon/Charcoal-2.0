@@ -91,23 +91,42 @@ class AIDialogueSystem:
         return conversation
     
     def generate_area_reaction(self, character: Character, area: Area, 
-                             first_visit: bool = False) -> str:
-        """Generate a character's reaction to entering an area"""
+                             tension_level: int = 0, first_visit: bool = False) -> str:
+        """Generate a character's reaction to entering an area with tension awareness"""
         
-        situation = f"{'Entering' if first_visit else 'Looking around'} {area.name}: {area.description}"
+        # Enhanced situation description based on tension level
+        if tension_level == 0:
+            situation = f"{'Cautiously entering' if first_visit else 'Nervously looking around'} {area.name}: {area.description}"
+        elif tension_level == 1:
+            situation = f"{'Fearfully stepping into' if first_visit else 'Anxiously scanning'} {area.name}: {area.description}. The danger is escalating."
+        elif tension_level == 2:
+            situation = f"{'Desperately entering' if first_visit else 'Frantically searching'} {area.name}: {area.description}. Terror grips your heart."
+        else:
+            situation = f"{'FACING THE ULTIMATE TRIAL in' if first_visit else 'CONFRONTING DESTINY in'} {area.name}: {area.description}. This is the moment of truth."
+        
         if area.enemies:
             situation += f" There might be {', '.join(area.enemies)} here."
         
-        context = f"You are exploring a dungeon. Current location: {area.name}"
+        context = f"You are exploring a dangerous dungeon. Current location: {area.name}. Tension level: {tension_level}/3"
         
         return self.generate_character_response(character, context, situation)
     
     def generate_combat_dialogue(self, character: Character, enemy: str, 
-                               action: str = "attack") -> str:
-        """Generate dialogue during combat"""
+                               tension_level: int = 0, action: str = "attack") -> str:
+        """Generate dialogue during combat with escalating intensity"""
         
-        situation = f"In combat with {enemy}, performing action: {action}"
-        context = "You are in battle, fighting for your life and your party"
+        if tension_level == 0:
+            situation = f"Engaging in combat with {enemy}, performing action: {action}"
+            context = "You are in battle, fighting alongside your trusted companions"
+        elif tension_level == 1:
+            situation = f"Locked in desperate combat with the fearsome {enemy}, performing action: {action}"
+            context = "You are in a dangerous battle, your life and your friends' lives hang in the balance"
+        elif tension_level == 2:
+            situation = f"Fighting for your very soul against the terrifying {enemy}, performing action: {action}"
+            context = "You are in a life-or-death battle, facing overwhelming odds with courage"
+        else:
+            situation = f"CONFRONTING DESTINY against the legendary {enemy}, performing action: {action}"
+            context = "You are in the ultimate battle, where legends are born and heroes are made or destroyed"
         
         return self.generate_character_response(character, context, situation)
     
@@ -128,48 +147,124 @@ class AIDialogueSystem:
         return prompt
     
     def _generate_mock_response(self, character: Character, situation: str) -> str:
-        """Generate mock responses when AI is not available"""
+        """Generate mock responses when AI is not available with emotional depth"""
         
-        # Define response templates based on character class and personality
+        # Detect tension level from situation context
+        tension_level = 0
+        if "TRIAL" in situation or "DESTINY" in situation:
+            tension_level = 3
+        elif "terror" in situation.lower() or "desperate" in situation.lower():
+            tension_level = 2
+        elif "fear" in situation.lower() or "danger" in situation.lower():
+            tension_level = 1
+        
+        # Enhanced response templates based on character class, personality, and tension
         templates = {
             "Warrior": {
-                "brave": ["Let's charge forward!", "I'll protect the party!", "My sword is ready!"],
-                "cautious": ["We should be careful here.", "Let me check for traps first.", "Stay close together."],
-                "hot-headed": ["I've had enough of this!", "Let's fight!", "Come on then!"]
+                "brave": {
+                    0: ["Let's move forward with purpose!", "I'll keep us safe.", "My blade is ready."],
+                    1: ["This danger doesn't intimidate me!", "Fear cannot touch a true warrior!", "I'll face whatever comes!"],
+                    2: ["By my honor, I will not falter!", "Let them come! I've faced worse!", "We fight together or die together!"],
+                    3: ["FOR GLORY AND LEGEND! This is our moment!", "DEATH BEFORE DISHONOR!", "TODAY WE MAKE HISTORY!"]
+                },
+                "cautious": {
+                    0: ["We should proceed carefully.", "Let me assess the situation.", "Stay alert, everyone."],
+                    1: ["Something feels wrong here... be ready.", "My instincts are screaming danger.", "We must be extremely careful."],
+                    2: ["I fear we're walking into a trap!", "Every fiber of my being says flee!", "This could be our end..."],
+                    3: ["THE VERY AIR REEKS OF DEATH! But we must press on!", "GODS PRESERVE US!", "This is beyond anything I've faced!"]
+                },
+                "hot-headed": {
+                    0: ["Let's just get this over with!", "Enough talking, more action!", "I'm ready to fight!"],
+                    1: ["Bring on whatever dares to challenge us!", "I'm itching for a real battle!", "Fear just makes me angry!"],
+                    2: ["COME AND FACE ME, COWARDS!", "I'LL TEAR THEM APART!", "MY RAGE BURNS HOTTER THAN THEIR EVIL!"],
+                    3: ["NOTHING CAN STOP MY FURY! NOTHING!", "I AM WRATH INCARNATE!", "LET THE WORLD TREMBLE!"]
+                }
             },
             "Mage": {
-                "wise": ["I sense magical energy here.", "Let me study this carefully.", "The arcane flows are strong."],
-                "curious": ["Fascinating! What's that over there?", "I wonder what this does...", "How intriguing!"],
-                "serious": ["Focus on the task at hand.", "We must proceed methodically.", "This requires concentration."]
+                "wise": {
+                    0: ["I sense arcane energies here.", "Let me study the magical flows.", "The weave speaks of secrets."],
+                    1: ["Dark magic permeates this place...", "The magical balance is disturbed here.", "I feel ancient evils stirring."],
+                    2: ["The very fabric of reality screams in pain!", "Such corruption of the arcane arts!", "This darkness defies all natural law!"],
+                    3: ["THE ULTIMATE MAGIC AWAKENS! We witness the impossible!", "REALITY ITSELF BENDS TO THIS POWER!", "By the stars... what have we found?"]
+                },
+                "curious": {
+                    0: ["How fascinating! What secrets hide here?", "I wonder what mysteries await.", "Every corner holds new knowledge."],
+                    1: ["Despite the danger, I must learn more!", "My curiosity burns brighter than my fear!", "What wonders and terrors might we discover?"],
+                    2: ["Even in terror, the pursuit of knowledge calls!", "I must understand, no matter the cost!", "Such dark mysteries demand investigation!"],
+                    3: ["THIS IS THE DISCOVERY OF A LIFETIME! Fear be damned!", "ULTIMATE KNOWLEDGE AWAITS!", "History will remember this moment!"]
+                }
             },
             "Rogue": {
-                "mischievous": ["I'll check for traps... and treasure.", "Something doesn't feel right.", "Trust me on this one."],
-                "cautious": ["Wait, let me scout ahead.", "I hear something...", "Better safe than sorry."],
-                "independent": ["I'll handle this myself.", "Don't worry about me.", "I work better alone."]
+                "mischievous": {
+                    0: ["Heh, wonder what treasures they're hiding.", "Time to see what 'secrets' lurk about.", "Something valuable always hides in dark places."],
+                    1: ["Even scared, I can smell opportunity.", "Danger means better loot, right?", "My hands are steady despite the fear."],
+                    2: ["Terror just makes the prize sweeter!", "I've stolen from dragons before!", "Fear sharpens the mind and fingers!"],
+                    3: ["THE ULTIMATE HEIST AWAITS! Let's take everything!", "LEGENDARY TREASURES FOR LEGENDARY THIEVES!", "This is what legends are made of!"]
+                },
+                "cautious": {
+                    0: ["Something doesn't feel right... stay sharp.", "I'll scout ahead, quietly.", "Trust your instincts, they rarely lie."],
+                    1: ["Every shadow could hide death...", "My skin crawls with warning.", "We're being hunted, I can feel it."],
+                    2: ["We're walking into certain doom!", "Every step could be our last!", "I've never felt dread like this!"],
+                    3: ["THE ULTIMATE TRAP SPRINGS! But maybe... just maybe we can escape!", "THIS IS BEYOND MORTAL COMPREHENSION!", "Gods help us all..."]
+                }
             },
             "Cleric": {
-                "loyal": ["I'll keep everyone safe.", "My faith will guide us.", "We're stronger together."],
-                "wise": ["The gods watch over us.", "There is wisdom in patience.", "Let us pray for guidance."],
-                "cheerful": ["Stay positive, friends!", "The light will see us through!", "We can do this!"]
+                "loyal": {
+                    0: ["My faith will protect us all.", "Together, we are stronger.", "The divine light guides our path."],
+                    1: ["Though darkness gathers, I stand with you.", "My prayers grow more fervent.", "The light burns brighter in shadow."],
+                    2: ["In our darkest hour, faith endures!", "The gods test us, but I will not waver!", "Light shall pierce this evil!"],
+                    3: ["BY THE DIVINE LIGHT, WE SHALL TRIUMPH!", "THE GODS THEMSELVES WATCH THIS BATTLE!", "ULTIMATE FAITH FOR THE ULTIMATE TRIAL!"]
+                },
+                "wise": {
+                    0: ["The divine guides those who listen.", "Patience and wisdom light our way.", "All things serve a greater purpose."],
+                    1: ["Even in danger, there is divine purpose.", "The gods work in mysterious ways.", "Wisdom tells us to be cautious but brave."],
+                    2: ["This trial tests our very souls!", "The gods demand courage in darkness!", "Ancient wisdom speaks of such trials!"],
+                    3: ["THIS IS THE DIVINE PLAN UNFOLDING! We are chosen!", "ULTIMATE WISDOM FOR ULTIMATE SACRIFICE!", "THE GODS WRITE LEGEND THROUGH US!"]
+                }
             }
         }
         
-        # Get appropriate responses
+        # Get character-specific responses
         class_templates = templates.get(character.character_class, {})
-        personality_responses = class_templates.get(character.personality, [])
+        personality_dict = class_templates.get(character.personality, {})
+        tension_responses = personality_dict.get(tension_level, [])
         
-        # Fallback responses
-        if not personality_responses:
-            fallback_responses = [
-                f"*{character.name} nods thoughtfully*",
-                f"\"Interesting...\" says {character.name}.",
-                f"{character.name} looks around carefully.",
-                f"\"What do you think?\" asks {character.name}.",
-                f"{character.name} adjusts their equipment."
-            ]
+        # Fallback to lower tension if no responses available
+        if not tension_responses:
+            for fallback_tension in range(tension_level - 1, -1, -1):
+                tension_responses = personality_dict.get(fallback_tension, [])
+                if tension_responses:
+                    break
+        
+        # Ultimate fallback responses based on tension
+        if not tension_responses:
+            if tension_level == 0:
+                fallback_responses = [
+                    f"*{character.name} nods thoughtfully*",
+                    f"\"Interesting...\" says {character.name}.",
+                    f"{character.name} looks around carefully."
+                ]
+            elif tension_level == 1:
+                fallback_responses = [
+                    f"*{character.name} grips their weapon tighter*",
+                    f"\"I don't like this...\" whispers {character.name}.",
+                    f"{character.name} scans the shadows nervously."
+                ]
+            elif tension_level == 2:
+                fallback_responses = [
+                    f"*{character.name} trembles but stands firm*",
+                    f"\"We... we can do this...\" {character.name} says shakily.",
+                    f"{character.name} breathes deeply to steady their nerves."
+                ]
+            else:
+                fallback_responses = [
+                    f"*{character.name} steels themselves for the ultimate trial*",
+                    f"\"THIS IS IT! FOR EVERYTHING WE HOLD DEAR!\" shouts {character.name}.",
+                    f"{character.name} radiates determination in the face of legend."
+                ]
             return random.choice(fallback_responses)
         
-        return f"\"{random.choice(personality_responses)}\" says {character.name}."
+        return f"\"{random.choice(tension_responses)}\" says {character.name}."
     
     def generate_narrative_description(self, situation: str, characters: List[Character],
                                      area: Area = None) -> str:
