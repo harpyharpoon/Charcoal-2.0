@@ -358,6 +358,140 @@
             padding: 15px;
             margin: 10px 0;
         }
+        
+        .quest-card {
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        
+        .quest-card:hover {
+            background-color: #444;
+            border-color: #00ff00;
+        }
+        
+        .quest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .quest-title {
+            color: #ffff00;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .quest-difficulty {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .quest-difficulty.easy { background-color: #004400; color: #00ff00; }
+        .quest-difficulty.medium { background-color: #444400; color: #ffff00; }
+        .quest-difficulty.hard { background-color: #440000; color: #ff0000; }
+        
+        .quest-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        
+        .quest-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .friend-item {
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .friend-info {
+            flex: 1;
+        }
+        
+        .friend-name {
+            color: #ffff00;
+            font-weight: bold;
+        }
+        
+        .friend-details {
+            color: #aaa;
+            font-size: 0.9em;
+        }
+        
+        .friend-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-indicator.online { background-color: #00ff00; }
+        .status-indicator.offline { background-color: #888; }
+        
+        .add-friend-form {
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .party-creator {
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .character-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .character-option {
+            background-color: #444;
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .character-option:hover {
+            background-color: #555;
+        }
+        
+        .character-option.selected {
+            background-color: #005500;
+            border-color: #00ff00;
+        }
     </style>
 </head>
 <body>
@@ -375,6 +509,7 @@
             <button class="nav-tab" onclick="switchTab('chat')">Chat</button>
             <button class="nav-tab" onclick="switchTab('inventory')">Inventory</button>
             <button class="nav-tab" onclick="switchTab('stats')">Stats</button>
+            <button class="nav-tab" onclick="switchTab('friends')">Friends</button>
             <button class="nav-tab" onclick="switchTab('quests')">Quests</button>
         </div>
 
@@ -492,8 +627,16 @@
 
         <!-- Quests Tab -->
         <div id="quests-tab" class="tab-content">
-            <h2>🗡️ Quest Board</h2>
-            <div class="loading">Quest system coming soon...</div>
+            <div id="questsContent">
+                <div class="loading">Loading available quests...</div>
+            </div>
+        </div>
+
+        <!-- Friends Tab -->
+        <div id="friends-tab" class="tab-content">
+            <div id="friendsContent">
+                <div class="loading">Select a character to view friends</div>
+            </div>
         </div>
     </div>
 
@@ -525,6 +668,10 @@
                 loadInventory();
             } else if (tabName === 'stats' && selectedCharacter) {
                 loadStats();
+            } else if (tabName === 'friends' && selectedCharacter) {
+                loadFriends();
+            } else if (tabName === 'quests') {
+                loadQuests();
             }
         }
 
@@ -671,6 +818,8 @@
                 loadInventory();
             } else if (activeTab === 'stats-tab') {
                 loadStats();
+            } else if (activeTab === 'friends-tab') {
+                loadFriends();
             }
         }
 
@@ -685,6 +834,7 @@
                     <div style="margin-top: 10px;">
                         <button onclick="loadInventory(); switchTab('inventory')">View Inventory</button>
                         <button onclick="loadStats(); switchTab('stats')" style="margin-left: 10px;">View Stats</button>
+                        <button onclick="loadFriends(); switchTab('friends')" style="margin-left: 10px;">View Friends</button>
                     </div>
                 </div>
             `;
@@ -982,6 +1132,245 @@
                     </div>
                 </div>
             `;
+        }
+
+        // Friends Management
+        async function loadFriends() {
+            if (!selectedCharacter) {
+                document.getElementById('friendsContent').innerHTML = '<div class="loading">Select a character to view friends</div>';
+                return;
+            }
+            
+            document.getElementById('friendsContent').innerHTML = '<div class="loading">Loading friends...</div>';
+            
+            try {
+                const response = await apiCall(`/api/v1/characters/${selectedCharacter.name}/friends`);
+                displayFriends(response);
+            } catch (error) {
+                console.error('Failed to load friends:', error);
+                document.getElementById('friendsContent').innerHTML = '<div class="error">Failed to load friends: ' + error.message + '</div>';
+            }
+        }
+
+        function displayFriends(friendsData) {
+            const container = document.getElementById('friendsContent');
+            
+            container.innerHTML = `
+                <h2>👥 ${friendsData.character_id}'s Friends</h2>
+                <p>Total Friends: ${friendsData.total_friends}</p>
+                
+                <!-- Add Friend Form -->
+                <div class="add-friend-form">
+                    <h3>Add Friend</h3>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="friendNameInput" placeholder="Enter character name" style="flex: 1;">
+                        <button onclick="addFriend()">Add Friend</button>
+                    </div>
+                </div>
+                
+                <!-- Friends List -->
+                <div>
+                    <h3>Friends List</h3>
+                    ${friendsData.friends.length > 0 ? 
+                        friendsData.friends.map(friend => `
+                            <div class="friend-item">
+                                <div class="friend-info">
+                                    <div class="friend-name">${friend.name}</div>
+                                    <div class="friend-details">${friend.character_class} • Level ${friend.level} • ${friend.background}</div>
+                                </div>
+                                <div class="friend-status">
+                                    <span class="status-indicator ${friend.online ? 'online' : 'offline'}"></span>
+                                    <span>${friend.online ? 'Online' : 'Offline'}</span>
+                                </div>
+                            </div>
+                        `).join('') :
+                        '<div class="loading">No friends yet. Add some friends to start your adventure!</div>'
+                    }
+                </div>
+            `;
+        }
+
+        async function addFriend() {
+            const friendName = document.getElementById('friendNameInput').value.trim();
+            if (!friendName) {
+                alert('Please enter a friend name');
+                return;
+            }
+            
+            if (!selectedCharacter) {
+                alert('Please select a character first');
+                return;
+            }
+            
+            try {
+                const response = await apiCall(`/api/v1/characters/${selectedCharacter.name}/friends`, 'POST', {
+                    friend_name: friendName
+                });
+                
+                console.log('Friend added:', response);
+                document.getElementById('friendNameInput').value = '';
+                await loadFriends(); // Refresh friends list
+                alert(`Added ${friendName} as friend!`);
+            } catch (error) {
+                console.error('Failed to add friend:', error);
+                alert('Failed to add friend: ' + error.message);
+            }
+        }
+
+        // Quest Board Management
+        async function loadQuests() {
+            document.getElementById('questsContent').innerHTML = '<div class="loading">Loading quests...</div>';
+            
+            try {
+                const response = await apiCall('/api/v1/quests');
+                displayQuests(response);
+            } catch (error) {
+                console.error('Failed to load quests:', error);
+                document.getElementById('questsContent').innerHTML = '<div class="error">Failed to load quests: ' + error.message + '</div>';
+            }
+        }
+
+        function displayQuests(questsData) {
+            const container = document.getElementById('questsContent');
+            
+            container.innerHTML = `
+                <h2>🗡️ Quest Board</h2>
+                <p>Available Quests: ${questsData.total}</p>
+                
+                <div class="quests-list">
+                    ${questsData.quests.map(quest => `
+                        <div class="quest-card">
+                            <div class="quest-header">
+                                <div class="quest-title">${quest.title}</div>
+                                <div class="quest-difficulty ${quest.difficulty.toLowerCase()}">${quest.difficulty}</div>
+                            </div>
+                            <div style="color: #aaa; margin: 10px 0;">${quest.description}</div>
+                            <div class="quest-info">
+                                <div><strong>Location:</strong> ${quest.location}</div>
+                                <div><strong>Required Level:</strong> ${quest.required_level}</div>
+                                <div><strong>Max Party Size:</strong> ${quest.max_party_size}</div>
+                                <div><strong>Reward:</strong> ${quest.reward}</div>
+                            </div>
+                            <div class="quest-actions">
+                                <button onclick="showPartyCreator('${quest.id}')">Create Party</button>
+                                <button onclick="viewQuestDetails('${quest.id}')">View Details</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <!-- Party Creator (hidden by default) -->
+                <div id="partyCreator" class="party-creator" style="display: none;">
+                    <h3>Create Party for Quest</h3>
+                    <div id="partyCreatorContent">
+                        <!-- Content will be filled by showPartyCreator -->
+                    </div>
+                </div>
+            `;
+        }
+
+        async function showPartyCreator(questId) {
+            const partyCreator = document.getElementById('partyCreator');
+            const content = document.getElementById('partyCreatorContent');
+            
+            try {
+                // Get quest details
+                const questsResponse = await apiCall('/api/v1/quests');
+                const quest = questsResponse.quests.find(q => q.id === questId);
+                
+                if (!quest) {
+                    alert('Quest not found');
+                    return;
+                }
+                
+                content.innerHTML = `
+                    <div><strong>Quest:</strong> ${quest.title}</div>
+                    <div style="margin: 10px 0;">
+                        <label>Party Name:</label>
+                        <input type="text" id="partyNameInput" placeholder="Enter party name" style="margin-left: 10px; width: 200px;">
+                    </div>
+                    
+                    <div>
+                        <h4>Select Characters (Max: ${quest.max_party_size})</h4>
+                        <div class="character-selector" id="characterSelector">
+                            ${characters.map(char => `
+                                <div class="character-option" onclick="toggleCharacterSelection('${char.name}')">
+                                    <div><strong>${char.name}</strong></div>
+                                    <div style="font-size: 0.8em; color: #888;">${char.character_class}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <button onclick="createParty('${questId}')">Create Party</button>
+                        <button onclick="hidePartyCreator()" style="margin-left: 10px;">Cancel</button>
+                    </div>
+                `;
+                
+                partyCreator.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Failed to show party creator:', error);
+                alert('Failed to load party creator: ' + error.message);
+            }
+        }
+
+        let selectedPartyMembers = [];
+
+        function toggleCharacterSelection(charName) {
+            const index = selectedPartyMembers.indexOf(charName);
+            const charElement = event.target.closest('.character-option');
+            
+            if (index > -1) {
+                // Remove from selection
+                selectedPartyMembers.splice(index, 1);
+                charElement.classList.remove('selected');
+            } else {
+                // Add to selection
+                selectedPartyMembers.push(charName);
+                charElement.classList.add('selected');
+            }
+        }
+
+        async function createParty(questId) {
+            const partyName = document.getElementById('partyNameInput').value.trim();
+            
+            if (!partyName) {
+                alert('Please enter a party name');
+                return;
+            }
+            
+            if (selectedPartyMembers.length === 0) {
+                alert('Please select at least one character');
+                return;
+            }
+            
+            try {
+                const response = await apiCall(`/api/v1/quests/${questId}/parties`, 'POST', {
+                    name: partyName,
+                    character_ids: selectedPartyMembers
+                });
+                
+                console.log('Party created:', response);
+                alert(`Party "${partyName}" created successfully!`);
+                hidePartyCreator();
+                selectedPartyMembers = [];
+                
+            } catch (error) {
+                console.error('Failed to create party:', error);
+                alert('Failed to create party: ' + error.message);
+            }
+        }
+
+        function hidePartyCreator() {
+            document.getElementById('partyCreator').style.display = 'none';
+            selectedPartyMembers = [];
+        }
+
+        function viewQuestDetails(questId) {
+            // This could open a modal or navigate to a detailed quest view
+            alert('Quest details feature coming soon!');
         }
 
         // Event handlers
