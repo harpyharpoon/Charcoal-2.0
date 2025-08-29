@@ -14,6 +14,7 @@ import asyncio
 # Import from legacy code
 from character import CharacterManager
 from ai_dialogue import AIDialogueSystem
+from items import ItemGenerator, Item, ItemType, ItemRarity
 
 app = FastAPI(title="Charcoal 2.0 API", version="1.0.0")
 
@@ -29,9 +30,13 @@ app.add_middleware(
 # Global managers
 character_manager = CharacterManager()
 dialogue_system = AIDialogueSystem()
+item_generator = ItemGenerator()
 
 # In-memory storage for chat messages (in production, use database)
 chat_messages: List[Dict] = []
+
+# In-memory character inventories (in production, use database)
+character_inventories: Dict[str, List[Dict]] = {}
 
 # WebSocket connection manager
 class ConnectionManager:
@@ -98,6 +103,17 @@ class AIResponseRequest(BaseModel):
     context: str
     prompt: str
     conversation_type: str = "conversation"
+
+class InventoryItem(BaseModel):
+    id: str
+    name: str
+    description: str
+    item_type: str
+    rarity: str
+    stats: Dict
+    value: int
+    equipped: bool = False
+    quantity: int = 1
 
 # API Routes
 @app.get("/")
@@ -237,6 +253,188 @@ async def generate_ai_response(request: AIResponseRequest):
             "character_name": character.name,
             "character_id": request.character_id
         }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Inventory Management
+@app.get("/api/v1/characters/{character_id}/inventory")
+async def get_character_inventory(character_id: str):
+    try:
+        # Find character
+        characters = character_manager.list_characters()
+        character = None
+        for char in characters:
+            if str(char.name) == character_id or char.name == character_id:
+                character = char
+                break
+        
+        if not character:
+            raise HTTPException(status_code=404, detail="Character not found")
+        
+        # Get or create inventory
+        if character_id not in character_inventories:
+            # Create starter inventory
+            starter_items = []
+            # Add a basic weapon based on class
+            if character.character_class.lower() in ["warrior", "paladin"]:
+                item = item_generator.generate_item(ItemType.WEAPON, ItemRarity.COMMON)
+            elif character.character_class.lower() in ["mage", "druid"]:
+                item = item_generator.generate_item(ItemType.WEAPON, ItemRarity.COMMON)  # Staff
+            else:
+                item = item_generator.generate_item(ItemType.WEAPON, ItemRarity.COMMON)
+            
+            starter_items.append({
+                "id": str(uuid.uuid4()),
+                "name": item.name,
+                "description": item.description,
+                "item_type": item.item_type.value,
+                "rarity": item.rarity.value,
+                "stats": {
+                    "attack": item.stats.attack,
+                    "defense": item.stats.defense,
+                    "magic_power": item.stats.magic_power,
+                    "health": item.stats.health,
+                    "special_effect": item.stats.special_effect
+                },
+                "value": item.value,
+                "equipped": True,
+                "quantity": 1
+            })
+            
+            # Add some basic armor
+            armor = item_generator.generate_item(ItemType.ARMOR, ItemRarity.COMMON)
+            starter_items.append({
+                "id": str(uuid.uuid4()),
+                "name": armor.name,
+                "description": armor.description,
+                "item_type": armor.item_type.value,
+                "rarity": armor.rarity.value,
+                "stats": {
+                    "attack": armor.stats.attack,
+                    "defense": armor.stats.defense,
+                    "magic_power": armor.stats.magic_power,
+                    "health": armor.stats.health,
+                    "special_effect": armor.stats.special_effect
+                },
+                "value": armor.value,
+                "equipped": True,
+                "quantity": 1
+            })
+            
+            character_inventories[character_id] = starter_items
+        
+        inventory = character_inventories.get(character_id, [])
+        
+        return {
+            "character_id": character_id,
+            "character_name": character.name,
+            "inventory": inventory,
+            "total_items": len(inventory),
+            "carrying_capacity": f"{len(inventory)}/50"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/v1/characters/{character_id}/inventory/equip")
+async def equip_item(character_id: str, request: dict):
+    try:
+        item_id = request.get("item_id")
+        if not item_id:
+            raise HTTPException(status_code=400, detail="item_id is required")
+        
+        inventory = character_inventories.get(character_id, [])
+        
+        # Find the item
+        item_to_equip = None
+        for item in inventory:
+            if item["id"] == item_id:
+                item_to_equip = item
+                break
+        
+        if not item_to_equip:
+            raise HTTPException(status_code=404, detail="Item not found in inventory")
+        
+        # Unequip other items of the same type (simplified equipment system)
+        item_type = item_to_equip["item_type"]
+        for item in inventory:
+            if item["item_type"] == item_type and item["id"] != item_id:
+                item["equipped"] = False
+        
+        # Equip the item
+        item_to_equip["equipped"] = True
+        
+        return {
+            "success": True,
+            "message": f"{item_to_equip['name']} equipped",
+            "item": item_to_equip
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/v1/characters/{character_id}/stats")
+async def get_character_stats(character_id: str):
+    try:
+        # Find character
+        characters = character_manager.list_characters()
+        character = None
+        for char in characters:
+            if str(char.name) == character_id or char.name == character_id:
+                character = char
+                break
+        
+        if not character:
+            raise HTTPException(status_code=404, detail="Character not found")
+        
+        # Calculate stats including equipment bonuses
+        base_stats = {
+            "hp": character.hp,
+            "max_hp": 100,
+            "level": character.level,
+            "experience": character.experience,
+            "strength": 10,
+            "dexterity": 10,
+            "intelligence": 10,
+            "constitution": 10
+        }
+        
+        # Add equipment bonuses
+        inventory = character_inventories.get(character_id, [])
+        equipment_bonuses = {
+            "attack": 0,
+            "defense": 0,
+            "magic_power": 0,
+            "health": 0
+        }
+        
+        equipped_items = []
+        for item in inventory:
+            if item.get("equipped", False):
+                equipped_items.append(item)
+                stats = item.get("stats", {})
+                equipment_bonuses["attack"] += stats.get("attack", 0)
+                equipment_bonuses["defense"] += stats.get("defense", 0)
+                equipment_bonuses["magic_power"] += stats.get("magic_power", 0)
+                equipment_bonuses["health"] += stats.get("health", 0)
+        
+        return {
+            "character_id": character_id,
+            "character_name": character.name,
+            "character_class": character.character_class,
+            "background": character.background,
+            "personality": character.personality,
+            "base_stats": base_stats,
+            "equipment_bonuses": equipment_bonuses,
+            "equipped_items": equipped_items
+        }
+        
     except HTTPException:
         raise
     except Exception as e:
