@@ -1,74 +1,81 @@
-# 🔥 CHARCOAL 2.0
-*A living MMO-style simulation where AI characters roam, interact, and evolve — while the world watches.*
+# Charcoal 2.0 - AI-Driven Community Fantasy Simulation
+
+Welcome to **Charcoal 2.0**, a unique hybrid of **emergent AI storytelling**, **community-driven art**, and **interactive governance**. In this world, AI characters live, quest, and interact autonomously, while human creators and the community shape the stories, the seasons, and the world itself.
 
 ---
 
-## 🎭 What is Charcoal 2.0?
+## Overview
 
-**Charcoal 2.0** is a persistent, text-based world powered by local or hosted LLMs, where anyone can create a unique AI character and list them at the local tavern.
+Charcoal 2.0 is a persistent, text-based MMO-style simulation where:
 
-These characters form adventuring parties, explore procedurally evolving lands, interact with other bots, and dive headfirst into dungeons, alliances, conflicts, and questlines — all while the *audience* follows their journey in real time.
+* **AI Characters**: Act autonomously based on their personalities, backstories, and interactions.
+* **Community Artists & Writers**: Submit story arcs, seasonal pitches, and original artwork to shape the world.
+* **Community Spectators**: Influence outcomes, vote on storylines, and participate in emergent narratives.
 
-You don’t play the game. You **create the characters**, **follow the drama**, and **watch the stories unfold**.
-
----
-
-## ⚙️ Core Features
-
-### 🛡️ Community-Made Bots
-Anyone can submit an AI character (via simple prompt/definition) and assign them a name, class, background, and personality quirks.
-
-### 🧭 Dynamic Parties
-Bots are grouped into traveling teams. They explore, talk, clash, and quest with each other using LLM-powered conversations and autonomous behavior.
-
-### 🍻 The Tavern
-A public, persistent “tavern” lists all available AI characters, ready to be recruited into new parties. Every party has a public log and stats.
-
-### 📖 Story Logs
-Each party generates a living, text-based story. Think: campaign journal meets AI fanfic. Highlights are marked for future playback or dramatization.
-
-### 🧠 Spectator Mode
-Spectators can follow favorite parties, vote on choices (eventually), or just chill and watch as bots roleplay their journey.
-
-### 🔊 Future Feature: AI Voiceover
-As parties build fanbases, episodes could be adapted into short audio dramas with real voice actors or synthetic voicing.
+This is not just a game—it's a living, evolving anthology of AI-driven adventures within a world crafted by human creativity.
 
 ---
 
-## 🎯 Goals
- 
-| Phase | What We're Building |
-|-------|----------------------|
-| ✅  | Public pitch doc + repo upload |
-| 🏗️  | Tavern bot system prototype |
-| 🧪  | Log generation + AI dialogue testing |
-| 📍  | Simple map/world backend |
-| 💬  | Spectator vote & logging tools |
-| 🔊  | Voice dramatization pipeline (stretch) |
+## Key Features
+
+### 1. Seasons & Episodic Gameplay
+
+* **Weekly Episodes**: Each week, a new AI-driven episode drops, showcasing the ongoing adventures of the world.
+* **Seasonal Storylines**: Community-submitted story pitches are voted on, with the top 3 selected:
+
+  * **Main Storyline** (canon)
+  * **Sub-Storyline**
+  * **Pre-Season / Experimental Arc**
+* **Replay System**: Community members can replay past arcs with their own AI characters to explore alternate outcomes.
+
+### 2. Community Art & Creative Contributions
+
+* **Human-Made Art Only**: All art in the game is guaranteed to be community-created, no AI-generated visuals.
+* **Season & Episode Art**: Artists provide banners, maps, and character illustrations for each season and episode.
+* **Fan Art Integration**: During the week, community art submissions inspired by the latest episode can be voted on and displayed in future episodes.
+
+### 3. Voting & Influence System
+
+* **Voting Tokens**: Used to select top story pitches for each season.
+* **Influence Tokens**: Spectators can spend tokens to nudge AI outcomes during episodes (e.g., heal party, buff enemy, trigger events).
+* **Replay Tokens**: Earned by participation and used to run alternate-history campaigns.
+* **Crypto Integration** (Optional): Tokens could be implemented as blockchain assets for transparency, earned through participation rather than purchase, to influence major story decisions.
+
+### 4. AI-Driven Characters & Story Logs
+
+* AI characters autonomously form parties, explore, fight, and interact.
+* Logs are generated documenting adventures, which can be highlighted, dramatized, or voiced.
+* Emergent narratives create unpredictable, unique stories every season.
+
+### 5. Community Engagement Loop
+
+1. **Pitch Phase**: Writers and artists submit season arcs with AI character seeds.
+2. **Selection Phase**: Community votes on the top 3 stories using tokens.
+3. **Run Phase**: Episodes play out, AI interacts, logs are generated.
+4. **Art & Discussion Phase**: Community submits art and memes; influence tokens adjust the next episode.
+5. **Replay Phase**: Community runs alternate-history campaigns with their own AI characters.
+6. **Chronicle Phase**: Canon outcomes are recorded on-chain (if blockchain is used), credits are given, next Pitch Phase begins.
 
 ---
 
-## 🧬 Inspirations
+## How to Contribute
 
-- *D&D Actual Play Shows* (but AI-run)
-- *Twitch Plays Pokémon* (but LLM-driven)
-- *Character.AI* meets *RimWorld* meets *MUDs*
-
----
-
-## 💭 Why It Matters
-
-> Charcoal 2.0 isn’t a game — it’s a **platform for collaborative world simulation**.  
->  
-> A creative playground where AI bots form their own stories, and the audience builds a connection to characters they didn’t just watch — they made.
+* **Submit AI Characters**: Design personalities, quirks, and backstories.
+* **Submit Artwork**: All submissions must be human-made. Maps, banners, portraits, and fanart are welcome.
+* **Vote & Influence**: Participate using your tokens to steer story arcs and episode outcomes.
+* **Join the Community**: Engage in discussions, share lore theories, and collaborate with other creators.
 
 ---
 
-## 🔗 Follow, Fork, or Join
+## Ethos & Guiding Principles
 
-More coming soon.  
-In the meantime:  
-- Join the tavern.  
-- Follow a party.  
-- Build your legend.
+* **Creativity First**: AI drives unpredictable narratives; humans craft the world.
+* **Transparency & Fairness**: Voting and influence are visible and traceable, optionally on-chain.
+* **Community Empowerment**: Artists, writers, and spectators all have meaningful impact.
+* **Sustainable Growth**: No pay-to-win mechanics, no hype-driven speculation; the world grows organically with engagement.
+
+---
+
+Charcoal 2.0 is not just a game—it's a collaborative, living mythology. Join us, create, vote, and watch as the AI actors bring your world to life.
+
 
