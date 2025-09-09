@@ -1,0 +1,78 @@
+{
+  "save_info": {
+    "name": "My Test Adventure Party",
+    "description": "A test save file with multiple characters for our adventure party",
+    "created_at": "2025-09-09T15:28:20.488698",
+    "version": "1.0.0"
+  },
+  "characters": [
+    {
+      "name": "Theron",
+      "character_class": "Warrior",
+      "background": "Soldier",
+      "personality": "brave",
+      "stats": {
+        "hp": 100,
+        "max_hp": 100,
+        "level": 1,
+        "experience": 0,
+        "strength": 10,
+        "dexterity": 10,
+        "intelligence": 10,
+        "constitution": 10,
+        "charisma": 10,
+        "attack_bonus": 0,
+        "defense_bonus": 0,
+        "magic_power_bonus": 0,
+        "health_bonus": 0,
+        "critical_chance": 5,
+        "damage_resistance": 0,
+        "magic_resistance": 0,
+        "luck_bonus": 0
+      },
+      "traits": [],
+      "starting_gear_choice": "",
+      "permadeath_enabled": false,
+      "death_count": 0,
+      "description": "A soldier warrior with a brave personality"
+    },
+    {
+      "name": "Lyra",
+      "character_class": "Mage",
+      "background": "Sage",
+      "personality": "wise",
+      "stats": {
+        "hp": 100,
+        "max_hp": 100,
+        "level": 1,
+        "experience": 0,
+        "strength": 10,
+        "dexterity": 10,
+        "intelligence": 10,
+        "constitution": 10,
+        "charisma": 10,
+        "attack_bonus": 0,
+        "defense_bonus": 0,
+        "magic_power_bonus": 0,
+        "health_bonus": 0,
+        "critical_chance": 5,
+        "damage_resistance": 0,
+        "magic_resistance": 0,
+        "luck_bonus": 0
+      },
+      "traits": [],
+      "starting_gear_choice": "",
+      "permadeath_enabled": false,
+      "death_count": 0,
+      "description": "A sage mage with a wise personality"
+    }
+  ],
+  "inventories": {
+    "Theron": [],
+    "Lyra": []
+  },
+  "friend_lists": {
+    "Theron": [],
+    "Lyra": []
+  }
+}
