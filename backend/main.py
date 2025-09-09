@@ -2,14 +2,18 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 import json
 import uuid
 from datetime import datetime
 import asyncio
+import hashlib
+import shutil
+from pathlib import Path
 
 # Import from legacy code
 from character import CharacterManager
@@ -40,6 +44,21 @@ character_inventories: Dict[str, List[Dict]] = {}
 
 # Friend lists (in production, use database)
 friend_lists: Dict[str, List[str]] = {}
+
+# Artwork storage setup
+ARTWORK_DIR = Path("artwork_uploads")
+ARTWORK_DIR.mkdir(exist_ok=True)
+
+# In-memory artwork storage (in production, use database)
+artwork_storage: Dict[str, Dict] = {}
+
+# Save file storage
+SAVES_DIR = Path("save_files") 
+SAVES_DIR.mkdir(exist_ok=True)
+
+# Serve static files for artwork
+app.mount("/static/artwork", StaticFiles(directory=str(ARTWORK_DIR)), name="artwork")
+app.mount("/static/saves", StaticFiles(directory=str(SAVES_DIR)), name="saves")
 
 # WebSocket connection manager
 class ConnectionManager:
@@ -124,6 +143,36 @@ class FriendRequest(BaseModel):
 class QuestCreate(BaseModel):
     name: str
     character_ids: List[str]
+
+class ArtworkUpload(BaseModel):
+    title: str
+    description: str = ""
+    associated_type: str  # "character" or "quest"
+    associated_id: str = ""
+
+class ArtworkResponse(BaseModel):
+    id: str
+    title: str
+    description: str
+    filename: str
+    file_path: str
+    associated_type: str
+    associated_id: str
+    uploaded_at: str
+
+class SaveFileCreate(BaseModel):
+    name: str
+    description: str = ""
+    character_ids: List[str]
+
+class SaveFileResponse(BaseModel):
+    id: str
+    name: str
+    description: str
+    filename: str
+    file_hash: str
+    character_count: int
+    created_at: str
 
 # API Routes
 @app.get("/")
@@ -648,6 +697,234 @@ async def create_quest_party(quest_id: str, request: QuestCreate):
         
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Artwork Management
+@app.post("/api/v1/artwork/upload", response_model=ArtworkResponse)
+async def upload_artwork(
+    file: UploadFile = File(...),
+    title: str = Form(...),
+    description: str = Form(""),
+    associated_type: str = Form(""),
+    associated_id: str = Form("")
+):
+    try:
+        # Validate file type
+        if file.content_type not in ["image/jpeg", "image/png", "image/gif", "image/webp"]:
+            raise HTTPException(status_code=400, detail="Invalid file type. Please upload an image.")
+        
+        # Generate unique filename
+        file_ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+        unique_filename = f"{uuid.uuid4()}.{file_ext}"
+        file_path = ARTWORK_DIR / unique_filename
+        
+        # Save file
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # Create artwork record
+        artwork_id = str(uuid.uuid4())
+        artwork_data = {
+            "id": artwork_id,
+            "title": title,
+            "description": description,
+            "filename": unique_filename,
+            "file_path": str(file_path),
+            "associated_type": associated_type,
+            "associated_id": associated_id,
+            "uploaded_at": datetime.utcnow().isoformat()
+        }
+        
+        artwork_storage[artwork_id] = artwork_data
+        
+        return ArtworkResponse(**artwork_data)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/v1/artwork")
+async def get_artwork():
+    try:
+        return {"artwork": list(artwork_storage.values())}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/v1/artwork/{artwork_id}")
+async def get_artwork_by_id(artwork_id: str):
+    try:
+        if artwork_id not in artwork_storage:
+            raise HTTPException(status_code=404, detail="Artwork not found")
+        
+        return artwork_storage[artwork_id]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/v1/artwork/{artwork_id}")
+async def delete_artwork(artwork_id: str):
+    try:
+        if artwork_id not in artwork_storage:
+            raise HTTPException(status_code=404, detail="Artwork not found")
+        
+        artwork = artwork_storage[artwork_id]
+        file_path = Path(artwork["file_path"])
+        
+        # Delete file if it exists
+        if file_path.exists():
+            file_path.unlink()
+        
+        # Remove from storage
+        del artwork_storage[artwork_id]
+        
+        return {"success": True, "message": "Artwork deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Save File Management
+@app.post("/api/v1/saves/export", response_model=SaveFileResponse)
+async def export_save_file(save_request: SaveFileCreate):
+    try:
+        # Get character data
+        characters = character_manager.list_characters()
+        selected_chars = []
+        
+        for char_id in save_request.character_ids:
+            for char in characters:
+                if char.name == char_id or str(char.name) == char_id:
+                    selected_chars.append(char.to_dict())
+                    break
+        
+        if not selected_chars:
+            raise HTTPException(status_code=400, detail="No valid characters found")
+        
+        # Create save data
+        save_data = {
+            "save_info": {
+                "name": save_request.name,
+                "description": save_request.description,
+                "created_at": datetime.utcnow().isoformat(),
+                "version": "1.0.0"
+            },
+            "characters": selected_chars,
+            "inventories": {char_id: character_inventories.get(char_id, []) for char_id in save_request.character_ids},
+            "friend_lists": {char_id: friend_lists.get(char_id, []) for char_id in save_request.character_ids}
+        }
+        
+        # Generate filename and save
+        save_id = str(uuid.uuid4())
+        filename = f"charcoal_save_{save_id}.json"
+        file_path = SAVES_DIR / filename
+        
+        with open(file_path, 'w') as f:
+            json.dump(save_data, f, indent=2)
+        
+        # Calculate hash
+        with open(file_path, 'rb') as f:
+            file_hash = hashlib.sha256(f.read()).hexdigest()
+        
+        save_response = SaveFileResponse(
+            id=save_id,
+            name=save_request.name,
+            description=save_request.description,
+            filename=filename,
+            file_hash=file_hash,
+            character_count=len(selected_chars),
+            created_at=datetime.utcnow().isoformat()
+        )
+        
+        return save_response
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/v1/saves/import")
+async def import_save_file(file: UploadFile = File(...)):
+    try:
+        if not file.filename.endswith('.json'):
+            raise HTTPException(status_code=400, detail="Invalid file type. Please upload a JSON save file.")
+        
+        # Read and parse save file
+        content = await file.read()
+        save_data = json.loads(content)
+        
+        # Validate save file structure
+        if "save_info" not in save_data or "characters" not in save_data:
+            raise HTTPException(status_code=400, detail="Invalid save file format")
+        
+        # Import characters
+        imported_count = 0
+        for char_data in save_data["characters"]:
+            try:
+                # Check if character already exists
+                existing_chars = character_manager.list_characters()
+                char_exists = any(char.name == char_data["name"] for char in existing_chars)
+                
+                if not char_exists:
+                    # Create character from save data
+                    char = character_manager.create_character(
+                        char_data["name"],
+                        char_data["character_class"],
+                        char_data["background"],
+                        char_data["personality"]
+                    )
+                    imported_count += 1
+                    
+                    # Restore inventory if exists
+                    if "inventories" in save_data and char_data["name"] in save_data["inventories"]:
+                        character_inventories[char_data["name"]] = save_data["inventories"][char_data["name"]]
+                    
+                    # Restore friend lists if exists
+                    if "friend_lists" in save_data and char_data["name"] in save_data["friend_lists"]:
+                        friend_lists[char_data["name"]] = save_data["friend_lists"][char_data["name"]]
+                        
+            except Exception as char_error:
+                print(f"Failed to import character {char_data.get('name', 'unknown')}: {char_error}")
+                continue
+        
+        return {
+            "success": True,
+            "message": f"Successfully imported {imported_count} characters",
+            "save_info": save_data["save_info"],
+            "characters_imported": imported_count
+        }
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON file")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/v1/saves")
+async def get_save_files():
+    try:
+        save_files = []
+        for file_path in SAVES_DIR.glob("*.json"):
+            try:
+                with open(file_path, 'r') as f:
+                    save_data = json.load(f)
+                
+                with open(file_path, 'rb') as f:
+                    file_hash = hashlib.sha256(f.read()).hexdigest()
+                
+                save_files.append({
+                    "filename": file_path.name,
+                    "name": save_data.get("save_info", {}).get("name", "Unknown"),
+                    "description": save_data.get("save_info", {}).get("description", ""),
+                    "character_count": len(save_data.get("characters", [])),
+                    "created_at": save_data.get("save_info", {}).get("created_at", ""),
+                    "file_hash": file_hash
+                })
+            except Exception as e:
+                print(f"Failed to read save file {file_path}: {e}")
+                continue
+        
+        return {"save_files": save_files}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
